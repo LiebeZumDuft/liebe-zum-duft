@@ -735,6 +735,41 @@
     .hero-art { width: min(100%, 320px); margin-top: 18px; }
   }
   @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+
+  /* Ruhige Credits im Footer, getrennt von der Reservierungskontaktadresse. */
+  .site-credits {
+    max-width: 520px;
+    margin: 36px auto 0;
+    padding: 24px 12px 4px;
+    border-top: 1px solid rgba(220,199,162,.16);
+    text-align: center;
+  }
+  .site-credits-label {
+    display: block;
+    color: var(--accent);
+    font-size: .7rem;
+    font-weight: 700;
+    letter-spacing: .2em;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+  .site-credits strong { font-size: 1.08rem; font-weight: 500; color: var(--fg); }
+  .site-credits-contact {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 5px 12px;
+    margin-top: 7px;
+    font-size: .9rem;
+    overflow-wrap: anywhere;
+  }
+  .site-credits a { text-decoration: none; color: var(--muted); }
+  .site-credits a:hover, .site-credits a:focus-visible { color: var(--accent); text-decoration: underline; }
+  @media (max-width: 440px) {
+    .site-credits-contact { flex-direction: column; gap: 5px; }
+    .site-credits-contact span { display: none; }
+  }
 </style>
 
 <header class="wrap top">
@@ -883,6 +918,15 @@
   <div class="script">Liebe zum Duft</div>
   <p>Die Online-Reservierung merkt verfügbare Flakons vor. Die endgültige Zusage erfolgt nach persönlicher WhatsApp-Bestätigung.</p>
   <p>Auf dem iPhone: Teilen-Symbol antippen, dann „Zum Home-Bildschirm“, damit die Seite wie eine App startet.</p>
+  <div class="site-credits" aria-label="Website-Credits">
+    <span class="site-credits-label">Website &amp; Entwicklung</span>
+    <strong>Julien Steinbeck</strong>
+    <div class="site-credits-contact">
+      <a href="tel:+4915754433337" aria-label="Julien Steinbeck anrufen">0157 54433337</a>
+      <span aria-hidden="true">·</span>
+      <a href="mailto:juliensteinbeck02@gmail.com">juliensteinbeck02@gmail.com</a>
+    </div>
+  </div>
 </footer>
 
 <div class="veil" id="veil" hidden>
