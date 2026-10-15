@@ -70,6 +70,9 @@
 .orders-toolbar p{margin:0;color:var(--muted);font-size:.95rem}
 @media(max-width:800px){.metric-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.order-card{grid-template-columns:1fr}.order-card .order-actions{justify-content:flex-start}}
 @media(max-width:480px){.admin-tabs{gap:3px;padding:5px}.admin-tab{font-size:.88rem;padding:10px 3px}.admin-panel{padding:16px}.metric{padding:16px 12px}.metric strong{font-size:1.48rem}.order-card{padding:15px}.order-card .order-action{font-size:.84rem}}
+.order-line{display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px solid rgba(220,199,162,.09);font-size:1.03rem}
+.order-line-price{white-space:nowrap;color:var(--accent)}
+.order-payment-controls{grid-column:1/-1;display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
 </style></head><body>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -1454,43 +1457,74 @@ if ('serviceWorker' in navigator) {
     document.getElementById('metric-revenue').textContent=euro.format(paidRows.reduce(function(a,r){return a+amount(r);},0));
     document.getElementById('metric-count').textContent=reserved.reduce(function(a,r){return a+count(r);},0);
     document.getElementById('metric-orders').textContent=orderable.reduce(function(a,r){return a+count(r);},0);
-    document.getElementById('dashboard-status').textContent='Letzte '+monthsSelected+' Monate · Stornierte Bestellungen werden nicht mitgerechnet. Reservierungswert ist kein bezahlter Umsatz.';
+    document.getElementById('dashboard-status').textContent='Letzte '+monthsSelected+' Monate · Entfernte Aufträge zählen nicht mehr. Reservierungswert ist kein bezahlter Umsatz.';
     var list=document.getElementById('dashboard-orders');list.textContent='';
+    var grouped=new Map();
+    newRows.forEach(function(r){
+      var key=r.cart_id ? 'cart:'+r.cart_id : 'single:'+r.request_id;
+      if(!grouped.has(key)) grouped.set(key,{key:key,cartId:r.cart_id||null,requestId:r.request_id,rows:[],date:r.created_at});
+      var group=grouped.get(key);group.rows.push(r);
+      if(new Date(r.created_at)>new Date(group.date))group.date=r.created_at;
+    });
     var query=norm(document.getElementById('orders-search').value.trim());
-    var visibleRows=newRows.filter(function(r){return !query || norm([r.first_name,r.last_name,r.perfume_name,r.phone].join(' ')).includes(query);});
-    document.getElementById('orders-count').textContent=visibleRows.length+' aktive Positionen';
-    if (!visibleRows.length){list.appendChild(el('p','empty','Keine passenden aktiven Bestellungen gefunden.'));return;}
-    visibleRows.slice(0,150).forEach(function(r){
+    var orders=Array.from(grouped.values()).filter(function(g){
+      return !query || g.rows.some(function(r){return norm([r.first_name,r.last_name,r.perfume_name,r.phone,r.cart_id].join(' ')).includes(query);});
+    }).sort(function(a,b){return new Date(b.date)-new Date(a.date);});
+    document.getElementById('orders-count').textContent=orders.length+' aktive Aufträge · '+orders.reduce(function(n,g){return n+g.rows.length;},0)+' Positionen';
+    if(!orders.length){list.appendChild(el('p','empty','Keine passenden aktiven Bestellungen gefunden.'));return;}
+    orders.slice(0,150).forEach(function(g){
+      var first=g.rows[0],total=g.rows.reduce(function(n,r){return n+amount(r);},0);
+      var fullname=[first.first_name,first.last_name].filter(Boolean).join(' ')||'Kunde nicht erfasst (Altbestand)';
       var card=el('div','order-card'),info=el('div');
-      info.appendChild(el('div','order-name',(r.first_name ? r.first_name+' '+(r.last_name||'') : 'Kunde nicht erfasst (Altbestand)')+' · '+r.perfume_name));
-      info.appendChild(el('div','order-meta',count(r)+' × '+r.size_ml+' ml · '+euro.format(amount(r))+' · '+new Date(r.created_at).toLocaleString('de-DE')));
-      if(r.cart_id)info.appendChild(el('div','order-meta','Warenkorb: '+r.cart_id.slice(0,8)));
-      info.appendChild(el('div','order-state',r.reservation_type==='orderable'?'Bestellanfrage (kein Lagerabzug)':r.paid_at?'Bezahlt':'Reserviert · Zahlung offen'));
-      card.appendChild(info);
-      var btn=el('button','order-action'+(r.paid_at?' paid':''),r.paid_at?'Zahlung zurücknehmen':'Als bezahlt markieren');btn.type='button';
-      btn.addEventListener('click',async function(){
-        if(!confirm(r.paid_at?'Zahlungsmarkierung wirklich zurücknehmen?':'Ist die Zahlung für diese Reservierung tatsächlich eingegangen?'))return;
-        btn.disabled=true;
-        try{
-          var response=await fetch(API_URL+'/rest/v1/rpc/set_reservation_payment',{method:'POST',headers:apiHeaders(true),body:JSON.stringify({p_request_id:r.request_id,p_paid:!r.paid_at})});
-          if(!response.ok)throw new Error('Speichern nicht möglich ('+response.status+').');
-          await loadDashboard();
-        }catch(e){alert(e.message);btn.disabled=false;}
+      info.appendChild(el('div','order-name',fullname));
+      info.appendChild(el('div','order-meta',new Date(g.date).toLocaleString('de-DE')+' · '+g.rows.length+' Position'+(g.rows.length===1?'':'en')+' · '+euro.format(total)));
+      if(g.cartId)info.appendChild(el('div','order-meta','Auftrag #'+g.cartId.slice(0,8)));
+      g.rows.forEach(function(r){
+        var detail=el('div','order-line');
+        detail.appendChild(el('span','order-line-name',count(r)+' × '+r.perfume_name+' · '+r.size_ml+' ml'));
+        detail.appendChild(el('span','order-line-price',euro.format(amount(r))));
+        info.appendChild(detail);
+        info.appendChild(el('div','order-state',r.reservation_type==='orderable'?'Bestellung · Bestellbar':r.paid_at?'Reserviert · Bezahlt':'Reserviert · Zahlung offen'));
       });
-      var actions=el('div','order-actions');actions.appendChild(btn);
-      var cancel=el('button','order-action danger','Aus Dashboard entfernen');cancel.type='button';
+      card.appendChild(info);
+      var actions=el('div','order-actions');
+      // Zahlungen werden weiterhin je Position markiert, da gemischte Zahlungen möglich sind.
+      var payment=el('button','order-action','Zahlungen bearbeiten');payment.type='button';
+      payment.addEventListener('click',function(){
+        var pane=card.querySelector('.order-payment-controls');
+        if(pane){pane.remove();return;}
+        pane=el('div','order-payment-controls');
+        g.rows.forEach(function(r){
+          var btn=el('button','order-action'+(r.paid_at?' paid':''),(r.paid_at?'Bezahlt ✓ · ':'Als bezahlt markieren · ')+r.perfume_name+' / '+r.size_ml+' ml');btn.type='button';
+          btn.addEventListener('click',async function(){
+            if(!confirm(r.paid_at?'Zahlung für diese Position zurücknehmen?':'Ist die Zahlung für diese Position eingegangen?'))return;
+            btn.disabled=true;
+            try{
+              var response=await fetch(API_URL+'/rest/v1/rpc/set_reservation_payment',{method:'POST',headers:apiHeaders(true),body:JSON.stringify({p_request_id:r.request_id,p_paid:!r.paid_at})});
+              var result=await response.json();
+              if(!response.ok||result!==true)throw new Error('Zahlung konnte nicht gespeichert werden: '+JSON.stringify(result));
+              await loadDashboard();
+            }catch(err){alert(err.message);btn.disabled=false;}
+          });pane.appendChild(btn);
+        });
+        card.appendChild(pane);
+      });actions.appendChild(payment);
+      var cancel=el('button','order-action danger','Auftrag entfernen');cancel.type='button';
       cancel.addEventListener('click',async function(){
-        if(!confirm('Diese Bestellung wirklich entfernen? Sie verschwindet aus dem Dashboard und den aktiven Zahlen. Reservierter Lagerbestand wird zurückgebucht.'))return;
-        cancel.disabled=true;
+        if(!confirm('Gesamten Auftrag mit '+g.rows.length+' Position(en) entfernen? Alle Positionen verschwinden aus den aktiven Zahlen und reservierter Lagerbestand wird zurückgebucht.'))return;
+        cancel.disabled=true;cancel.textContent='Wird entfernt …';
         try{
-          var resp=await fetch(API_URL+'/rest/v1/rpc/cancel_perfume_reservation',{method:'POST',headers:apiHeaders(true),body:JSON.stringify({p_request_id:r.request_id})});
-          var resultText=await resp.text();
-          if(!resp.ok)throw new Error('Storno fehlgeschlagen ('+resp.status+'): '+resultText.slice(0,350));
-          if(resultText.trim() !== 'true') throw new Error('Supabase hat die Stornierung nicht bestätigt: '+resultText);
-          dashboardRows=dashboardRows.filter(function(x){return x.request_id!==r.request_id;});
+          var resp=await fetch(API_URL+'/rest/v1/rpc/cancel_perfume_order',{method:'POST',headers:apiHeaders(true),body:JSON.stringify({p_cart_id:g.cartId,p_request_id:g.cartId?null:g.requestId})});
+          var raw=await resp.text();var removed;
+          try{removed=JSON.parse(raw);}catch(e){removed=raw;}
+          if(!resp.ok)throw new Error('Auftrag konnte nicht entfernt werden (HTTP '+resp.status+'): '+raw.slice(0,450));
+          if(typeof removed!=='number'||removed<1)throw new Error('Kein aktiver Auftrag entfernt. Bitte die SQL-Funktion installieren oder die Ansicht aktualisieren. Antwort: '+raw);
+          // Sofort ausblenden und anschließend aus der Datenbank erneut laden.
+          dashboardRows=dashboardRows.filter(function(x){return g.cartId?x.cart_id!==g.cartId:x.request_id!==g.requestId;});
           drawDashboard();
-          await loadDashboard();await refreshStock();
-        }catch(err){alert(err.message);cancel.disabled=false;}
+          await loadDashboard();
+          await refreshStock();
+        }catch(err){alert(err.message);cancel.disabled=false;cancel.textContent='Auftrag entfernen';}
       });
       actions.appendChild(cancel);card.appendChild(actions);list.appendChild(card);
     });
