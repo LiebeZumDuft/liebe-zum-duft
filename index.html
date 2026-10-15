@@ -1,4 +1,30 @@
-<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}
+  /* Admin: reduziertes Boutique-Dashboard */
+  .admin-tabs{display:flex;flex-wrap:wrap;gap:9px;margin:24px 0 22px}
+  .admin-tab,.period,.admin-mini{background:#12100e;border:1px solid rgba(220,199,162,.17);color:var(--muted);padding:10px 17px;border-radius:999px;cursor:pointer;font-family:var(--font-display);font-size:1rem}
+  .admin-tab.active,.period.active{background:var(--accent);color:#16110b;border-color:var(--accent);font-weight:700}
+  .admin-panel{padding:25px;border:1px solid rgba(220,199,162,.14);border-radius:24px;background:#0c0b0a}
+  .admin-panel-head{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:15px}
+  .admin-panel h3{font-size:2rem;font-weight:500;margin:0}
+  .admin-panel .eyebrow{margin:0;color:var(--accent)}
+  .period-pills{display:flex;gap:8px;flex-wrap:wrap;margin:22px 0}
+  .metric-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+  .metric{padding:21px 18px;border-radius:17px;border:1px solid rgba(220,199,162,.13);background:linear-gradient(145deg,#191611,#100e0c)}
+  .metric span,.metric small{display:block;color:var(--muted);font-size:.86rem}
+  .metric strong{display:block;font-size:clamp(1.6rem,4vw,2.25rem);line-height:1.2;margin:7px 0;color:var(--fg);font-variant-numeric:tabular-nums}
+  .order-header{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:28px;flex-wrap:wrap}
+  .order-header h4{font-size:1.5rem;margin:0;font-weight:500}.order-header span{font-size:.9rem;color:var(--muted)}
+  .order-list{max-height:550px;overflow:auto;margin-top:12px}
+  .order-card{border:1px solid rgba(220,199,162,.12);border-radius:15px;margin-bottom:10px;padding:15px;display:flex;gap:15px;align-items:center;justify-content:space-between;flex-wrap:wrap;background:#11100e}
+  .order-name{font-size:1.16rem}.order-meta{font-size:.88rem;color:var(--muted)}
+  .order-state{font-size:.85rem;color:var(--accent);margin:3px 0}
+  .order-action{border-radius:99px;border:1px solid var(--accent);background:transparent;color:var(--accent);padding:9px 15px;cursor:pointer;white-space:nowrap}
+  .order-action.paid{color:var(--ok);border-color:rgba(188,200,180,.3)}
+  .order-action:disabled{opacity:.5;cursor:wait}
+  #stock-panel .admin-item{background:#11100e;border:1px solid rgba(220,199,162,.12);border-radius:18px;padding:18px;margin:10px 0}
+  @media(max-width:560px){.admin-panel{padding:16px}.metric-grid{grid-template-columns:1fr 1fr}.metric{padding:14px 11px}.metric small{font-size:.75rem}.admin-tab{flex:1;padding:10px}}
+
+</style></head><body>
 <title>Liebe zum Duft</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <meta name="theme-color" content="#020203">
@@ -767,10 +793,35 @@
     </form>
     <div id="admin-workspace" hidden>
       <button type="button" class="secondary" id="admin-logout">Abmelden</button>
+      <div class="admin-tabs" role="group" aria-label="Adminansicht">
+        <button id="tab-overview" type="button" class="admin-tab active">Übersicht & Umsatz</button>
+        <button id="tab-stock" type="button" class="admin-tab">Lagerbestand bearbeiten</button>
+      </div>
+      <section id="overview-panel" class="admin-panel" aria-label="Reservierungsübersicht">
+        <div class="admin-panel-head"><div><p class="eyebrow">Dashboard</p><h3>Reservierungen & Umsatz</h3></div>
+          <button type="button" id="dashboard-refresh" class="admin-mini">Aktualisieren ↻</button></div>
+        <div class="period-pills" role="group" aria-label="Auswertungszeitraum">
+          <button class="period active" type="button" data-months="1">1 Monat</button>
+          <button class="period" type="button" data-months="3">3 Monate</button>
+          <button class="period" type="button" data-months="6">6 Monate</button>
+          <button class="period" type="button" data-months="12">12 Monate</button>
+        </div>
+        <div class="metric-grid">
+          <div class="metric"><span>Reservierungswert</span><strong id="metric-reservations">–</strong><small>Im Zeitraum angelegt, noch kein Umsatz</small></div>
+          <div class="metric"><span>Bezahlter Umsatz</span><strong id="metric-revenue">–</strong><small>Im Zeitraum als bezahlt erfasst</small></div>
+          <div class="metric"><span>Reservierte Flakons</span><strong id="metric-count">–</strong><small>Nur lagernde Ware</small></div>
+          <div class="metric"><span>Bestellanfragen</span><strong id="metric-orders">–</strong><small>Bei Bestand 0</small></div>
+        </div>
+        <p class="note" id="dashboard-status" role="status">Daten werden geladen …</p>
+        <div class="order-header"><h4>Letzte Reservierungen</h4><span>Bezahlungen manuell bestätigen</span></div>
+        <div id="dashboard-orders" class="order-list"></div>
+      </section>
+      <section id="stock-panel" class="admin-panel" hidden aria-label="Bestandsverwaltung">
       <p class="note">Trage für jeden Duft die Stückzahl für 30, 50 und 100 ml ein. Bei 0 erscheint für Kunden „Bestellbar“. Änderungen sind nach dem Speichern für alle Besucher sichtbar.</p>
       <label class="lbl" for="admin-search">Duft suchen</label>
       <input id="admin-search" class="search" type="search" placeholder="Duftname suchen">
       <div id="admin-items"></div>
+      </section>
     </div>
   </section>
 </main>
@@ -1294,12 +1345,76 @@
       document.getElementById('admin-password').value = '';
       adminStatus.textContent = 'Angemeldet als Bilal. Du kannst die Bestände bearbeiten.';
       renderAdmin();
+      setAdminTab('overview');
     } catch(err) { accessToken = ''; adminStatus.textContent = err.message || 'Anmeldung fehlgeschlagen.'; }
   });
   document.getElementById('admin-logout').addEventListener('click', function() {
-    accessToken = ''; workspace.hidden = true; loginForm.hidden = false;
+    accessToken = ''; dashboardRows=[]; workspace.hidden = true; loginForm.hidden = false;
     adminStatus.textContent = 'Abgemeldet.';
   });
+  var dashboardRows = [];
+  var monthsSelected = 1;
+  var euro = new Intl.NumberFormat('de-DE',{style:'currency',currency:'EUR'});
+  function setAdminTab(tab) {
+    document.getElementById('overview-panel').hidden = tab !== 'overview';
+    document.getElementById('stock-panel').hidden = tab !== 'stock';
+    document.getElementById('tab-overview').classList.toggle('active', tab === 'overview');
+    document.getElementById('tab-stock').classList.toggle('active', tab === 'stock');
+    if (tab === 'overview') loadDashboard();
+  }
+  document.getElementById('tab-overview').addEventListener('click', function(){setAdminTab('overview');});
+  document.getElementById('tab-stock').addEventListener('click', function(){setAdminTab('stock');});
+  document.getElementById('dashboard-refresh').addEventListener('click',loadDashboard);
+  Array.from(document.querySelectorAll('.period')).forEach(function(btn){btn.addEventListener('click',function(){
+    monthsSelected=Number(btn.dataset.months);
+    document.querySelectorAll('.period').forEach(function(b){b.classList.toggle('active',b===btn);});
+    drawDashboard();
+  });});
+  function sinceDate() {var d = new Date();d.setMonth(d.getMonth()-monthsSelected);return d;}
+  async function loadDashboard(){
+    if (!accessToken) return;
+    var status = document.getElementById('dashboard-status');
+    status.textContent='Reservierungen werden geladen …';
+    try {
+      var res=await fetch(API_URL+'/rest/v1/stock_reservations?select=request_id,perfume_name,size_ml,created_at,price_eur,paid_at,reservation_type&order=created_at.desc&limit=10000',{headers:apiHeaders(true)});
+      if (!res.ok) throw new Error('HTTP '+res.status+'. Bitte zuerst ADMIN_DASHBOARD_EINRICHTEN.sql in Supabase ausführen.');
+      dashboardRows=await res.json();drawDashboard();
+    }catch(err){status.textContent='Dashboard konnte nicht geladen werden: '+err.message;}
+  }
+  function drawDashboard(){
+    var since=sinceDate();
+    var newRows=dashboardRows.filter(function(r){return new Date(r.created_at)>=since;});
+    var paidRows=dashboardRows.filter(function(r){return r.paid_at && new Date(r.paid_at)>=since;});
+    var reserved=newRows.filter(function(r){return r.reservation_type==='reserved';});
+    var orderable=newRows.filter(function(r){return r.reservation_type==='orderable';});
+    function amount(row){return Number(row.price_eur)||({30:25,50:35,100:45}[Number(row.size_ml)]||0);}
+    document.getElementById('metric-reservations').textContent=euro.format(newRows.reduce(function(a,r){return a+amount(r);},0));
+    document.getElementById('metric-revenue').textContent=euro.format(paidRows.reduce(function(a,r){return a+amount(r);},0));
+    document.getElementById('metric-count').textContent=reserved.length;
+    document.getElementById('metric-orders').textContent=orderable.length;
+    document.getElementById('dashboard-status').textContent='Auswertung der letzten '+monthsSelected+' Monate. Zahlungseingänge werden nach dem Datum der Bestätigung ausgewertet. Reservierungen sind kein verbuchter Umsatz.';
+    var list=document.getElementById('dashboard-orders');list.textContent='';
+    if (!newRows.length){list.appendChild(el('p','empty','Noch keine Reservierungen in diesem Zeitraum.'));return;}
+    newRows.slice(0,100).forEach(function(r){
+      var card=el('div','order-card'),info=el('div');
+      info.appendChild(el('div','order-name',r.perfume_name));
+      info.appendChild(el('div','order-meta',r.size_ml+' ml · '+euro.format(amount(r))+' · '+new Date(r.created_at).toLocaleString('de-DE')));
+      info.appendChild(el('div','order-state',r.reservation_type==='orderable'?'Bestellanfrage (kein Lagerabzug)':r.paid_at?'Bezahlt':'Reserviert · Zahlung offen'));
+      card.appendChild(info);
+      var btn=el('button','order-action'+(r.paid_at?' paid':''),r.paid_at?'Zahlung zurücknehmen':'Als bezahlt markieren');btn.type='button';
+      btn.addEventListener('click',async function(){
+        if(!confirm(r.paid_at?'Zahlungsmarkierung wirklich zurücknehmen?':'Ist die Zahlung für diese Reservierung tatsächlich eingegangen?'))return;
+        btn.disabled=true;
+        try{
+          var response=await fetch(API_URL+'/rest/v1/rpc/set_reservation_payment',{method:'POST',headers:apiHeaders(true),body:JSON.stringify({p_request_id:r.request_id,p_paid:!r.paid_at})});
+          if(!response.ok)throw new Error('Speichern nicht möglich ('+response.status+').');
+          await loadDashboard();
+        }catch(e){alert(e.message);btn.disabled=false;}
+      });
+      card.appendChild(btn);list.appendChild(card);
+    });
+  }
+
   adminSearch.addEventListener('input', renderAdmin);
   function renderAdmin() {
     if (!accessToken) return;
