@@ -1,4 +1,4 @@
-const CACHE_NAME = 'lzd-pwa-v1';
+const CACHE_NAME = 'lzd-pwa-v2';
 const APP_SHELL = [
   './',
   './index.html',
@@ -31,6 +31,12 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
   const request = event.request;
   if (request.method !== 'GET') return;
+
+  // Konfiguration immer frisch laden, damit Supabase-Einstellungen nicht veralten.
+  if (new URL(request.url).pathname.endsWith('/config.js')) {
+    event.respondWith(fetch(request).catch(() => caches.match(request)));
+    return;
+  }
 
   // Für Navigationen zuerst Netzwerk, sonst Cache-Fallback.
   if (request.mode === 'navigate') {

@@ -1080,7 +1080,7 @@ if ('serviceWorker' in navigator) {
       names.appendChild(availability);
       var go = document.createElement("span");
       go.className = "go";
-      go.textContent = "Reservieren";
+      go.textContent = SIZES.every(function(sz){ return inventoryCount(item, sz) === 0; }) ? "Bestellen" : "Auswählen";
       btn.appendChild(names);
       btn.appendChild(go);
       btn.addEventListener("click", function () { openSheet(item, btn); });
@@ -1179,7 +1179,23 @@ if ('serviceWorker' in navigator) {
     });
     fs.appendChild(sizes);
     form.appendChild(fs);
-    form.appendChild(el("p", "note", "Bestand: " + stockText(item)));
+    var stockHint = el("p", "note");
+    form.appendChild(stockHint);
+    var quantityWrap = el("div", "field");
+    var quantityLabel = el("label", "lbl", "Anzahl der Flakons");
+    quantityLabel.htmlFor = "f-quantity";
+    var quantityInput = el("input");
+    quantityInput.id = "f-quantity";
+    quantityInput.type = "number";
+    quantityInput.min = "1";
+    quantityInput.max = "20";
+    quantityInput.step = "1";
+    quantityInput.value = "1";
+    quantityInput.inputMode = "numeric";
+    quantityInput.style.cssText = "width:100%;background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:12px 14px";
+    quantityWrap.appendChild(quantityLabel);
+    quantityWrap.appendChild(quantityInput);
+    form.appendChild(quantityWrap);
 
     var fields = el("div", "fields");
     var fn = field("f-first", "Vorname", { autocomplete: "given-name", value: lsGet("lzd-first") });
@@ -1190,6 +1206,17 @@ if ('serviceWorker' in navigator) {
 
     var go = el("button", "primary", "Reservieren");
     go.type = "submit";
+    function updateOrderMode() {
+      var chosen = Number(form.querySelector('input[name="size"]:checked').value);
+      var available = inventoryCount(item, chosen);
+      var ordering = available === 0;
+      go.textContent = ordering ? "Bestellen" : "Reservieren";
+      stockHint.textContent = available === null ? "Für diese Größe ist noch kein Bestand hinterlegt." : ordering ? "Aktuell 0 verfügbar · Bestellbar · Anfrage per WhatsApp" : available + " Flakons verfügbar · wird bei Reservierung abgezogen";
+      quantityInput.max = String(ordering ? 20 : available === null ? 1 : Math.min(20, available));
+      if (Number(quantityInput.value) > Number(quantityInput.max)) quantityInput.value = quantityInput.max;
+    }
+    sizes.addEventListener("change", updateOrderMode);
+    updateOrderMode();
     form.appendChild(go);
     sheet.appendChild(form);
 
@@ -1209,7 +1236,14 @@ if ('serviceWorker' in navigator) {
       });
       if (!ok) { (fn.input.value.trim() ? ln.input : fn.input).focus(); return; }
       var size = form.querySelector('input[name="size"]:checked').value;
-      var data = { first: fn.input.value.trim(), last: ln.input.value.trim(), phone: ph.input.value.trim(), size: size };
+      var quantity = Number(quantityInput.value);
+      var available = inventoryCount(item, Number(size));
+      if (!Number.isInteger(quantity) || quantity < 1 || quantity > 20 || (available !== 0 && (available === null || quantity > available))) {
+        stockHint.textContent = "Bitte eine gültige Stückzahl auswählen, die dem verfügbaren Bestand entspricht (maximal 20).";
+        quantityInput.focus();
+        return;
+      }
+      var data = { first: fn.input.value.trim(), last: ln.input.value.trim(), phone: ph.input.value.trim(), size: size, quantity: quantity };
       lsSet("lzd-first", data.first); lsSet("lzd-last", data.last); lsSet("lzd-phone", data.phone);
       showConfirm(item, data);
     });
@@ -1221,12 +1255,12 @@ if ('serviceWorker' in navigator) {
 
   function showConfirm(item, d) {
     var full = (item.brand ? item.brand + " " : "") + item.title;
-    var price = PRICES[d.size] + " €";
+    var price = (PRICES[d.size] * d.quantity) + " €";
     var available = inventoryCount(item, Number(d.size));
     var requestId = (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : null;
     var reservationFinished = false;
-    var msg = "Hallo, ich möchte " + (available === 0 ? "bestellen" : "reservieren") + ":\n" +
-      full + ", " + d.size + " ml (" + price + ")\n" +
+    var msg = "Hallo, ich möchte " + d.quantity + " × " + full + " (" + d.size + " ml) " + (available === 0 ? "bestellen" : "reservieren") + ".\n" +
+      "Gesamtpreis: " + price + "\n" +
       "Name: " + d.first + " " + d.last +
       (d.phone ? "\nTelefon: " + d.phone : "");
 
@@ -1235,17 +1269,17 @@ if ('serviceWorker' in navigator) {
 
     var sum = el("div", "summary");
     var dl = el("dl");
-    [["Duft", full], ["Größe", d.size + " ml"], ["Verfügbarkeit", stockText(item)], ["Preis", price], ["Name", d.first + " " + d.last]].concat(d.phone ? [["Telefon", d.phone]] : [])
+    [["Duft", full], ["Größe", d.size + " ml"], ["Anzahl", String(d.quantity)], ["Verfügbarkeit", available === 0 ? "Bestellbar" : available + " verfügbar"], ["Gesamtpreis", price], ["Name", d.first + " " + d.last]].concat(d.phone ? [["Telefon", d.phone]] : [])
       .forEach(function (r) { dl.appendChild(el("dt", null, r[0])); dl.appendChild(el("dd", null, r[1])); });
     sum.appendChild(dl);
     sheet.appendChild(sum);
 
     var note = el("p", "note");
-    note.appendChild(el("strong", null, "Reservierung abschließen: "));
-    note.appendChild(document.createTextNode("Mit dem nächsten Klick wird bei verfügbarem Bestand genau ein Flakon für dich reserviert und sofort vom Online-Bestand abgezogen. Danach öffnet sich WhatsApp. Bitte die Nachricht dort wirklich absenden. Bei Bestand 0 wird stattdessen eine unverbindliche Bestellanfrage geöffnet."));
+    note.appendChild(el("strong", null, "Anfrage abschließen: "));
+    note.appendChild(document.createTextNode("Mit dem nächsten Klick wird deine Anfrage in der Übersicht erfasst. Bei verfügbarer Ware wird die gewählte Stückzahl vom Lagerbestand abgezogen; bei 0 wird eine Bestellanfrage ohne Abzug erfasst. Danach öffnet sich WhatsApp. Bitte die Nachricht dort auch wirklich absenden."));
     sheet.appendChild(note);
 
-    var wa = el("button", "primary", "Reservierung anlegen & WhatsApp öffnen");
+    var wa = el("button", "primary", available === 0 ? "Bestellen & WhatsApp öffnen" : "Reservieren & WhatsApp öffnen");
     wa.type = "button";
     var bookingStatus = el("p", "note");
     bookingStatus.setAttribute("role", "status");
@@ -1267,25 +1301,25 @@ if ('serviceWorker' in navigator) {
       try {
         var result = await apiRequest("/rest/v1/rpc/reserve_perfume", {
           method: "POST",
-          body: JSON.stringify({ p_request_id: requestId, p_perfume_name: item.name, p_size_ml: Number(d.size) })
+          body: JSON.stringify({ p_request_id: requestId, p_perfume_name: item.name, p_size_ml: Number(d.size), p_quantity: d.quantity })
         });
         if (result === "reserved") {
           reservationFinished = true;
           msg += "\nReservierungsnummer: " + requestId;
           box.value = msg;
-          bookingStatus.textContent = "Reserviert: 1 Flakon wurde vom Bestand abgezogen. Bitte WhatsApp-Nachricht absenden.";
+          bookingStatus.textContent = "Reserviert: " + d.quantity + " Flakon(s) wurden vom Bestand abgezogen und im Dashboard erfasst. Bitte WhatsApp-Nachricht absenden.";
           note.textContent = "Deine Reservierung ist im System vorgemerkt. Bitte sende die WhatsApp-Nachricht jetzt ab. Eine endgültige Bestätigung erfolgt persönlich.";
           wa.textContent = "WhatsApp erneut öffnen";
           await refreshStock();
         } else if (result === "orderable") {
           reservationFinished = true;
-          msg = msg.replace("ich möchte reservieren", "ich möchte bestellen");
+          msg = msg.replace(" reservieren.", " bestellen.");
           box.value = msg;
-          bookingStatus.textContent = "Bestand 0: Es wurde nichts abgezogen. Bitte sende deine Bestellanfrage über WhatsApp.";
+          bookingStatus.textContent = "Bestellanfrage über " + d.quantity + " Flakon(s) ist im Dashboard erfasst. Kein Lagerabzug. Bitte WhatsApp-Nachricht absenden.";
           wa.textContent = "WhatsApp erneut öffnen";
           await refreshStock();
         } else {
-          throw new Error(result === "not_registered" ? "Für diese Größe ist noch kein Bestand im Adminbereich hinterlegt." : "Reservierung konnte nicht abgeschlossen werden.");
+          throw new Error(result === "not_registered" ? "Für diese Größe ist noch kein Bestand im Adminbereich hinterlegt." : result === "insufficient" ? "Nicht mehr genügend Flakons vorhanden. Bitte die Stückzahl reduzieren und neu starten." : "Reservierung konnte nicht abgeschlossen werden.");
         }
         var url = "https://wa.me/" + ADMIN_WHATSAPP + "?text=" + encodeURIComponent(msg);
         if (popup && !popup.closed) popup.location.replace(url);
@@ -1383,7 +1417,7 @@ if ('serviceWorker' in navigator) {
     var status = document.getElementById('dashboard-status');
     status.textContent='Reservierungen werden geladen …';
     try {
-      var res=await fetch(API_URL+'/rest/v1/stock_reservations?select=request_id,perfume_name,size_ml,created_at,price_eur,paid_at,reservation_type&order=created_at.desc&limit=10000',{headers:apiHeaders(true)});
+      var res=await fetch(API_URL+'/rest/v1/stock_reservations?select=request_id,perfume_name,size_ml,created_at,price_eur,quantity,paid_at,reservation_type&order=created_at.desc&limit=10000',{headers:apiHeaders(true)});
       if (!res.ok) throw new Error('HTTP '+res.status+'. Bitte zuerst ADMIN_DASHBOARD_EINRICHTEN.sql in Supabase ausführen.');
       dashboardRows=await res.json();drawDashboard();
     }catch(err){status.textContent='Dashboard konnte nicht geladen werden: '+err.message;}
@@ -1394,18 +1428,19 @@ if ('serviceWorker' in navigator) {
     var paidRows=dashboardRows.filter(function(r){return r.paid_at && new Date(r.paid_at)>=since;});
     var reserved=newRows.filter(function(r){return r.reservation_type==='reserved';});
     var orderable=newRows.filter(function(r){return r.reservation_type==='orderable';});
-    function amount(row){return Number(row.price_eur)||({30:25,50:35,100:45}[Number(row.size_ml)]||0);}
+    function count(row){return Number(row.quantity) || 1;}
+    function amount(row){return (Number(row.price_eur)||({30:25,50:35,100:45}[Number(row.size_ml)]||0))*count(row);}
     document.getElementById('metric-reservations').textContent=euro.format(newRows.reduce(function(a,r){return a+amount(r);},0));
     document.getElementById('metric-revenue').textContent=euro.format(paidRows.reduce(function(a,r){return a+amount(r);},0));
-    document.getElementById('metric-count').textContent=reserved.length;
-    document.getElementById('metric-orders').textContent=orderable.length;
+    document.getElementById('metric-count').textContent=reserved.reduce(function(a,r){return a+count(r);},0);
+    document.getElementById('metric-orders').textContent=orderable.reduce(function(a,r){return a+count(r);},0);
     document.getElementById('dashboard-status').textContent='Auswertung der letzten '+monthsSelected+' Monate. Zahlungseingänge werden nach dem Datum der Bestätigung ausgewertet. Reservierungen sind kein verbuchter Umsatz.';
     var list=document.getElementById('dashboard-orders');list.textContent='';
     if (!newRows.length){list.appendChild(el('p','empty','Noch keine Reservierungen in diesem Zeitraum.'));return;}
     newRows.slice(0,100).forEach(function(r){
       var card=el('div','order-card'),info=el('div');
       info.appendChild(el('div','order-name',r.perfume_name));
-      info.appendChild(el('div','order-meta',r.size_ml+' ml · '+euro.format(amount(r))+' · '+new Date(r.created_at).toLocaleString('de-DE')));
+      info.appendChild(el('div','order-meta',count(r)+' × '+r.size_ml+' ml · '+euro.format(amount(r))+' · '+new Date(r.created_at).toLocaleString('de-DE')));
       info.appendChild(el('div','order-state',r.reservation_type==='orderable'?'Bestellanfrage (kein Lagerabzug)':r.paid_at?'Bezahlt':'Reserviert · Zahlung offen'));
       card.appendChild(info);
       var btn=el('button','order-action'+(r.paid_at?' paid':''),r.paid_at?'Zahlung zurücknehmen':'Als bezahlt markieren');btn.type='button';
