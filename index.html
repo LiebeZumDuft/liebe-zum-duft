@@ -31,6 +31,45 @@
   #stock-panel .admin-item{background:#11100e;border:1px solid rgba(220,199,162,.12);border-radius:18px;padding:18px;margin:10px 0}
   @media(max-width:560px){.admin-panel{padding:16px}.metric-grid{grid-template-columns:1fr 1fr}.metric{padding:14px 11px}.metric small{font-size:.75rem}.admin-tab{flex:1;padding:10px}}
 
+
+/* Admin V2: ruhige, getrennte Bereiche */
+.admin-page{max-width:1080px;padding-top:32px}
+.admin-page>h2{font-size:clamp(2.3rem,5vw,3.7rem)}
+.admin-page #admin-status{color:var(--muted);margin:8px 0 18px}
+.admin-page .secondary#admin-logout{width:auto;margin:0 0 12px auto;padding:9px 19px;font-size:.72rem;display:block}
+.admin-tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:18px 0 26px;padding:7px;border:1px solid rgba(220,199,162,.11);background:#100e0c;border-radius:20px}
+.admin-tab{border:0;border-radius:14px;background:transparent;padding:13px 7px;color:#c7b6a1;font-family:var(--font-display);font-size:1.06rem;letter-spacing:.02em}
+.admin-tab.active{background:#dfc8a1;color:#18120b;box-shadow:0 3px 20px rgba(0,0,0,.2)}
+.admin-panel{padding:clamp(16px,3vw,32px);border-radius:26px;background:#100e0c;border-color:rgba(220,199,162,.12)}
+.admin-panel-head{padding-bottom:18px;border-bottom:1px solid rgba(220,199,162,.10)}
+.admin-panel-head h3{font-size:clamp(1.7rem,3vw,2.4rem)}
+.period-pills{margin:20px 0 24px;gap:8px}
+.period{padding:9px 16px;font-size:.95rem}
+.metric-grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.metric{padding:20px 17px;border-radius:18px;background:#191511;border-color:rgba(220,199,162,.12)}
+.metric span{font-size:.93rem;line-height:1.3}
+.metric strong{font-size:clamp(1.5rem,2.8vw,2.2rem);white-space:nowrap}
+.metric small{line-height:1.35;font-size:.78rem}
+.dashboard-note{margin:22px 0 0;color:var(--muted);font-size:.97rem}
+.order-list{max-height:none;overflow:visible;margin-top:20px}
+.order-card{padding:18px 20px;border-radius:18px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:13px;background:#171310;margin:0 0 11px}
+.order-card .order-name{font-size:1.25rem;line-height:1.25}
+.order-card .order-meta{font-size:.96rem;margin-top:5px;line-height:1.4}
+.order-card .order-state{font-size:.93rem;margin-top:8px}
+.order-card .order-actions{display:flex;gap:8px;align-items:center;justify-content:flex-end;flex-wrap:wrap}
+.order-card .order-action{font-size:.9rem;padding:10px 13px}
+.order-card .order-action.danger{color:#f0b5aa;border-color:rgba(240,181,170,.36)}
+.order-card .order-action.danger:hover{background:rgba(240,181,170,.09)}
+.order-card .order-action:disabled{opacity:.45}
+#stock-panel .admin-item{background:#181410;padding:21px;border-radius:18px}
+#stock-panel .admin-controls{gap:12px}
+#stock-panel .admin-controls label{min-width:110px}
+#stock-panel .admin-controls button{background:#dfc8a1}
+.orders-toolbar{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-top:22px}
+.orders-toolbar .search{max-width:430px}
+.orders-toolbar p{margin:0;color:var(--muted);font-size:.95rem}
+@media(max-width:800px){.metric-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.order-card{grid-template-columns:1fr}.order-card .order-actions{justify-content:flex-start}}
+@media(max-width:480px){.admin-tabs{gap:3px;padding:5px}.admin-tab{font-size:.88rem;padding:10px 3px}.admin-panel{padding:16px}.metric{padding:16px 12px}.metric strong{font-size:1.48rem}.order-card{padding:15px}.order-card .order-action{font-size:.84rem}}
 </style></head><body>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -800,11 +839,12 @@
     <div id="admin-workspace" hidden>
       <button type="button" class="secondary" id="admin-logout">Abmelden</button>
       <div class="admin-tabs" role="group" aria-label="Adminansicht">
-        <button id="tab-overview" type="button" class="admin-tab active">Übersicht & Umsatz</button>
-        <button id="tab-stock" type="button" class="admin-tab">Lagerbestand bearbeiten</button>
+        <button id="tab-overview" type="button" class="admin-tab active">Dashboard</button>
+        <button id="tab-orders" type="button" class="admin-tab">Bestellungen</button>
+        <button id="tab-stock" type="button" class="admin-tab">Lagerbestand</button>
       </div>
-      <section id="overview-panel" class="admin-panel" aria-label="Reservierungsübersicht">
-        <div class="admin-panel-head"><div><p class="eyebrow">Dashboard</p><h3>Reservierungen & Umsatz</h3></div>
+      <section id="overview-panel" class="admin-panel" aria-label="Dashboard">
+        <div class="admin-panel-head"><div><p class="eyebrow">Überblick</p><h3>Umsatz & Reservierungen</h3></div>
           <button type="button" id="dashboard-refresh" class="admin-mini">Aktualisieren ↻</button></div>
         <div class="period-pills" role="group" aria-label="Auswertungszeitraum">
           <button class="period active" type="button" data-months="1">1 Monat</button>
@@ -813,13 +853,17 @@
           <button class="period" type="button" data-months="12">12 Monate</button>
         </div>
         <div class="metric-grid">
-          <div class="metric"><span>Reservierungswert</span><strong id="metric-reservations">–</strong><small>Im Zeitraum angelegt, noch kein Umsatz</small></div>
-          <div class="metric"><span>Bezahlter Umsatz</span><strong id="metric-revenue">–</strong><small>Im Zeitraum als bezahlt erfasst</small></div>
-          <div class="metric"><span>Reservierte Flakons</span><strong id="metric-count">–</strong><small>Nur lagernde Ware</small></div>
-          <div class="metric"><span>Bestellanfragen</span><strong id="metric-orders">–</strong><small>Bei Bestand 0</small></div>
+          <div class="metric"><span>Reservierungswert</span><strong id="metric-reservations">–</strong><small>Aktive Anfragen</small></div>
+          <div class="metric"><span>Bezahlter Umsatz</span><strong id="metric-revenue">–</strong><small>Zahlung eingegangen</small></div>
+          <div class="metric"><span>Reservierte Flakons</span><strong id="metric-count">–</strong><small>Ware vom Lager</small></div>
+          <div class="metric"><span>Bestellanfragen</span><strong id="metric-orders">–</strong><small>Ware auf Bestellung</small></div>
         </div>
-        <p class="note" id="dashboard-status" role="status">Daten werden geladen …</p>
-        <div class="order-header"><h4>Letzte Reservierungen</h4><span>Bezahlungen manuell bestätigen</span></div>
+        <p class="dashboard-note" id="dashboard-status" role="status">Daten werden geladen …</p>
+        <button type="button" id="dashboard-to-orders" class="cta">Bestellungen verwalten →</button>
+      </section>
+      <section id="orders-panel" class="admin-panel" hidden aria-label="Bestellungen">
+        <div class="admin-panel-head"><div><p class="eyebrow">Verwaltung</p><h3>Bestellungen & Kunden</h3></div><button id="orders-refresh" type="button" class="admin-mini">Aktualisieren ↻</button></div>
+        <div class="orders-toolbar"><input id="orders-search" class="search" type="search" placeholder="Name oder Duft suchen" aria-label="Bestellungen suchen"><p id="orders-count"></p></div>
         <div id="dashboard-orders" class="order-list"></div>
       </section>
       <section id="stock-panel" class="admin-panel" hidden aria-label="Bestandsverwaltung">
@@ -1368,13 +1412,19 @@ if ('serviceWorker' in navigator) {
   var euro = new Intl.NumberFormat('de-DE',{style:'currency',currency:'EUR'});
   function setAdminTab(tab) {
     document.getElementById('overview-panel').hidden = tab !== 'overview';
+    document.getElementById('orders-panel').hidden = tab !== 'orders';
     document.getElementById('stock-panel').hidden = tab !== 'stock';
-    document.getElementById('tab-overview').classList.toggle('active', tab === 'overview');
-    document.getElementById('tab-stock').classList.toggle('active', tab === 'stock');
-    if (tab === 'overview') loadDashboard();
+    ['overview','orders','stock'].forEach(function(name){
+      document.getElementById('tab-'+name).classList.toggle('active',tab===name);
+    });
+    if (tab === 'overview' || tab === 'orders') loadDashboard();
   }
-  document.getElementById('tab-overview').addEventListener('click', function(){setAdminTab('overview');});
-  document.getElementById('tab-stock').addEventListener('click', function(){setAdminTab('stock');});
+  document.getElementById('tab-overview').addEventListener('click',function(){setAdminTab('overview');});
+  document.getElementById('tab-orders').addEventListener('click',function(){setAdminTab('orders');});
+  document.getElementById('tab-stock').addEventListener('click',function(){setAdminTab('stock');});
+  document.getElementById('dashboard-to-orders').addEventListener('click',function(){setAdminTab('orders');});
+  document.getElementById('orders-refresh').addEventListener('click',loadDashboard);
+  document.getElementById('orders-search').addEventListener('input',drawDashboard);
   document.getElementById('dashboard-refresh').addEventListener('click',loadDashboard);
   Array.from(document.querySelectorAll('.period')).forEach(function(btn){btn.addEventListener('click',function(){
     monthsSelected=Number(btn.dataset.months);
@@ -1404,10 +1454,13 @@ if ('serviceWorker' in navigator) {
     document.getElementById('metric-revenue').textContent=euro.format(paidRows.reduce(function(a,r){return a+amount(r);},0));
     document.getElementById('metric-count').textContent=reserved.reduce(function(a,r){return a+count(r);},0);
     document.getElementById('metric-orders').textContent=orderable.reduce(function(a,r){return a+count(r);},0);
-    document.getElementById('dashboard-status').textContent='Auswertung der letzten '+monthsSelected+' Monate. Zahlungseingänge werden nach dem Datum der Bestätigung ausgewertet. Reservierungen sind kein verbuchter Umsatz.';
+    document.getElementById('dashboard-status').textContent='Letzte '+monthsSelected+' Monate · Stornierte Bestellungen werden nicht mitgerechnet. Reservierungswert ist kein bezahlter Umsatz.';
     var list=document.getElementById('dashboard-orders');list.textContent='';
-    if (!newRows.length){list.appendChild(el('p','empty','Noch keine Reservierungen in diesem Zeitraum.'));return;}
-    newRows.slice(0,100).forEach(function(r){
+    var query=norm(document.getElementById('orders-search').value.trim());
+    var visibleRows=newRows.filter(function(r){return !query || norm([r.first_name,r.last_name,r.perfume_name,r.phone].join(' ')).includes(query);});
+    document.getElementById('orders-count').textContent=visibleRows.length+' aktive Positionen';
+    if (!visibleRows.length){list.appendChild(el('p','empty','Keine passenden aktiven Bestellungen gefunden.'));return;}
+    visibleRows.slice(0,150).forEach(function(r){
       var card=el('div','order-card'),info=el('div');
       info.appendChild(el('div','order-name',(r.first_name ? r.first_name+' '+(r.last_name||'') : 'Kunde nicht erfasst (Altbestand)')+' · '+r.perfume_name));
       info.appendChild(el('div','order-meta',count(r)+' × '+r.size_ml+' ml · '+euro.format(amount(r))+' · '+new Date(r.created_at).toLocaleString('de-DE')));
@@ -1424,10 +1477,10 @@ if ('serviceWorker' in navigator) {
           await loadDashboard();
         }catch(e){alert(e.message);btn.disabled=false;}
       });
-      card.appendChild(btn);
-      var cancel=el('button','order-action','Stornieren');cancel.type='button';
+      var actions=el('div','order-actions');actions.appendChild(btn);
+      var cancel=el('button','order-action danger','Aus Dashboard entfernen');cancel.type='button';
       cancel.addEventListener('click',async function(){
-        if(!confirm('Diese Position stornieren? Der Reservierungswert wird aus der Auswertung entfernt; reservierter Bestand wird wieder freigegeben.'))return;
+        if(!confirm('Diese Bestellung wirklich entfernen? Sie verschwindet aus dem Dashboard und den aktiven Zahlen. Reservierter Lagerbestand wird zurückgebucht.'))return;
         cancel.disabled=true;
         try{
           var resp=await fetch(API_URL+'/rest/v1/rpc/cancel_perfume_reservation',{method:'POST',headers:apiHeaders(true),body:JSON.stringify({p_request_id:r.request_id})});
@@ -1439,7 +1492,7 @@ if ('serviceWorker' in navigator) {
           await loadDashboard();await refreshStock();
         }catch(err){alert(err.message);cancel.disabled=false;}
       });
-      card.appendChild(cancel);list.appendChild(card);
+      actions.appendChild(cancel);card.appendChild(actions);list.appendChild(card);
     });
   }
 
