@@ -1,0 +1,1060 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Liebe zum Duft</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="theme-color" content="#020203">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Pinyon+Script&display=swap">
+<style>
+  /* Layout: ein schwarzer Raum wie auf dem Plakat. Startseite = Bild, Text, Preise.
+     "Meine Düfte" ist eine eigene Ansicht mit Suche und Liste, Reservierung als Bottom-Sheet. */
+  :root {
+    --bg: #020203;
+    --surface: #0b0e15;
+    --surface-2: #121722;
+    --line: #1e2533;
+    --fg: #f1ece6;
+    --muted: #a3abbb;
+    --accent: #a9c3ee;
+    --accent-ink: #07101f;
+    --danger: #f0a090;
+    --ok: #a6d3a0;
+    --font-display: "Cormorant Garamond", "Palatino Linotype", Georgia, serif;
+    --font-script: "Pinyon Script", "Snell Roundhand", cursive;
+    color-scheme: dark;
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--fg);
+    font-family: var(--font-display);
+    font-size: 19px;
+    line-height: 1.55;
+    font-weight: 400;
+    -webkit-text-size-adjust: 100%;
+  }
+  .wrap {
+    width: 100%;
+    max-width: 720px;
+    margin-inline: auto;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+  }
+  a { color: inherit; }
+  button, input { font: inherit; color: inherit; }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 4px; }
+  .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+  /* Kopfzeile */
+  .top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding-block: 16px 6px;
+  }
+  .brand {
+    font-family: var(--font-script);
+    font-size: 2rem;
+    line-height: 1;
+    text-decoration: none;
+    background: none;
+    border: 0;
+    padding: 0;
+    cursor: pointer;
+  }
+  .nav { display: flex; gap: 22px; }
+  .nav button {
+    background: none;
+    border: 0;
+    border-bottom: 1px solid transparent;
+    padding: 8px 0;
+    font-size: 0.82rem;
+    font-weight: 600;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--muted);
+    cursor: pointer;
+  }
+  .nav button:hover { color: var(--fg); }
+  .nav button[aria-current="page"] { color: var(--fg); border-bottom-color: var(--accent); }
+
+  /* Startseite: Bild */
+  .hero-art {
+    width: min(100%, 640px);
+    margin: 0 auto;
+    -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 5%, #000 91%, transparent 100%);
+    mask-image: linear-gradient(to bottom, transparent 0, #000 5%, #000 91%, transparent 100%);
+  }
+  .hero-art img { display: block; width: 100%; height: auto; }
+  @media (min-width: 700px) {
+    .hero-art {
+      -webkit-mask-image:
+        linear-gradient(to bottom, transparent 0, #000 5%, #000 91%, transparent 100%),
+        linear-gradient(to right, transparent 0, #000 16%, #000 84%, transparent 100%);
+      mask-image:
+        linear-gradient(to bottom, transparent 0, #000 5%, #000 91%, transparent 100%),
+        linear-gradient(to right, transparent 0, #000 16%, #000 84%, transparent 100%);
+      -webkit-mask-composite: source-in;
+      mask-composite: intersect;
+    }
+  }
+
+  .intro { text-align: center; margin-top: -28px; }
+  .tagline {
+    font-style: italic;
+    font-weight: 400;
+    font-size: clamp(2rem, 7.4vw, 2.9rem);
+    line-height: 1.15;
+    margin: 0 auto;
+    max-width: 18ch;
+    text-wrap: balance;
+  }
+  .intro p.body {
+    font-size: 1.28rem;
+    line-height: 1.5;
+    margin: 22px auto 0;
+    max-width: 34em;
+    color: var(--fg);
+    text-wrap: pretty;
+  }
+  .intro p.body em { color: var(--accent); font-style: italic; }
+
+  .oil {
+    margin: 44px auto 0;
+    padding: 28px 0;
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 22px;
+    text-align: left;
+  }
+  .oil .big {
+    font-size: clamp(3.4rem, 14vw, 4.6rem);
+    font-weight: 600;
+    line-height: 0.9;
+    color: var(--accent);
+    font-variant-numeric: lining-nums;
+  }
+  .oil .txt { font-size: 1.15rem; line-height: 1.35; max-width: 17em; }
+  .oil .txt b { display: block; font-weight: 600; font-size: 0.82rem; letter-spacing: 0.22em; text-transform: uppercase; color: var(--muted); margin-bottom: 4px; }
+
+  .prices-title {
+    font-size: 0.82rem;
+    font-weight: 600;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin: 40px 0 14px;
+  }
+  .prices {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+  }
+  .prices li {
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    padding: 16px 6px 14px;
+    background: var(--surface);
+  }
+  .prices .ml { display: block; font-size: 1.05rem; color: var(--muted); }
+  .prices .eur { display: block; font-size: 1.9rem; font-weight: 600; line-height: 1.2; font-variant-numeric: lining-nums; }
+
+  .cta {
+    display: inline-block;
+    margin-top: 36px;
+    padding: 16px 34px;
+    background: var(--fg);
+    color: #0a0a0c;
+    border: 0;
+    border-radius: 999px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    font-size: 0.86rem;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  .cta:hover { background: var(--accent); }
+
+  /* Düfte-Ansicht */
+  .back {
+    background: none;
+    border: 0;
+    padding: 12px 0 0;
+    font-size: 0.82rem;
+    font-weight: 600;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--muted);
+    cursor: pointer;
+  }
+  .back:hover { color: var(--fg); }
+  .section-head { padding-top: 18px; }
+  h2 {
+    font-weight: 500;
+    font-size: clamp(2.4rem, 9vw, 3.4rem);
+    line-height: 1.05;
+    margin: 0 0 6px;
+  }
+  .count { color: var(--muted); margin: 0 0 14px; font-variant-numeric: lining-nums; }
+
+  .search-bar {
+    position: sticky;
+    top: env(safe-area-inset-top, 0px);
+    z-index: 5;
+    background: var(--bg);
+    padding-block: 10px;
+  }
+  .search {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 12px 22px;
+    font-size: 1.1rem;
+  }
+  .search::placeholder { color: var(--muted); }
+  .search:focus { border-color: var(--accent); outline: none; }
+
+  .chips {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    padding: 6px 0 14px;
+    scrollbar-width: none;
+  }
+  .chips::-webkit-scrollbar { display: none; }
+  .chip {
+    flex: none;
+    background: transparent;
+    border: 1px solid var(--line);
+    color: var(--muted);
+    border-radius: 999px;
+    padding: 6px 16px;
+    font-size: 1rem;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); font-weight: 600; }
+
+  .letter {
+    font-size: 1.7rem;
+    font-weight: 500;
+    color: var(--accent);
+    margin: 26px 0 2px;
+    padding-bottom: 4px;
+    border-bottom: 1px solid var(--line);
+  }
+  .list { list-style: none; margin: 0; padding: 0; }
+  .row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    width: 100%;
+    text-align: left;
+    background: none;
+    border: 0;
+    border-bottom: 1px solid var(--line);
+    padding: 12px 4px;
+    cursor: pointer;
+    min-height: 58px;
+  }
+  .row:hover { background: var(--surface); }
+  .row .names { min-width: 0; display: flex; flex-direction: column; }
+  .row .brand-line {
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--muted);
+    line-height: 1.3;
+  }
+  .row .title { font-size: 1.3rem; line-height: 1.2; overflow-wrap: anywhere; }
+  .row .go {
+    flex: none;
+    font-size: 0.74rem;
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--accent);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 6px 12px;
+  }
+  .row:hover .go { border-color: var(--accent); }
+  .empty { padding: 40px 0; color: var(--muted); text-align: center; }
+
+  footer {
+    margin-top: 64px;
+    padding-block: 28px 48px;
+    border-top: 1px solid var(--line);
+    color: var(--muted);
+    font-size: 1rem;
+    text-align: center;
+  }
+  footer .script { font-family: var(--font-script); font-size: 2rem; color: var(--fg); line-height: 1; margin-bottom: 8px; }
+  footer p { margin: 6px auto; max-width: 46ch; }
+
+  /* Reservierungs-Sheet */
+  .veil {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    z-index: 20;
+  }
+  .veil[hidden] { display: none; }
+  .sheet {
+    width: 100%;
+    max-width: 520px;
+    max-height: 94%;
+    overflow-y: auto;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-bottom: 0;
+    border-radius: 22px 22px 0 0;
+    padding: 24px max(20px, env(safe-area-inset-right, 0px)) calc(24px + env(safe-area-inset-bottom, 0px)) max(20px, env(safe-area-inset-left, 0px));
+    box-shadow: 0 -20px 60px rgba(0, 0, 0, 0.6);
+  }
+  @media (min-width: 640px) {
+    .veil { align-items: center; }
+    .sheet { border-radius: 22px; border-bottom: 1px solid var(--line); max-height: 90%; }
+  }
+  .sheet-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; }
+  .sheet .s-brand { font-size: 0.76rem; font-weight: 600; letter-spacing: 0.22em; text-transform: uppercase; color: var(--accent); margin: 0; }
+  .sheet h3 { font-weight: 500; font-size: 2rem; line-height: 1.1; margin: 4px 0 0; overflow-wrap: anywhere; }
+  .close {
+    flex: none;
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 1.3rem;
+    line-height: 1;
+  }
+  fieldset { border: 0; padding: 0; margin: 22px 0 0; min-width: 0; }
+  legend, label.lbl {
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding: 0;
+    margin-bottom: 8px;
+    display: block;
+  }
+  .sizes { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .size { position: relative; }
+  .size input { position: absolute; opacity: 0; pointer-events: none; }
+  .size span {
+    display: block;
+    text-align: center;
+    padding: 12px 0 10px;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    cursor: pointer;
+    font-size: 1.4rem;
+    font-weight: 500;
+    line-height: 1.15;
+  }
+  .size small { display: block; font-size: 1rem; color: var(--muted); font-weight: 400; }
+  .size input:checked + span { border-color: var(--accent); background: var(--surface-2); color: var(--accent); }
+  .size input:checked + span small { color: var(--accent); }
+  .size input:focus-visible + span { outline: 2px solid var(--accent); outline-offset: 3px; }
+  .fields { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 20px; }
+  .fields .full { grid-column: 1 / -1; }
+  .field { min-width: 0; }
+  .field input {
+    width: 100%;
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 12px 14px;
+    font-size: 1.15rem;
+  }
+  .field input:focus { border-color: var(--accent); outline: none; }
+  .field input[aria-invalid="true"] { border-color: var(--danger); }
+  .opt { text-transform: none; letter-spacing: 0; font-weight: 400; color: var(--muted); }
+  .err { color: var(--danger); font-size: 0.95rem; margin: 6px 0 0; min-height: 1em; }
+  @media (max-width: 420px) { .fields { grid-template-columns: 1fr; } }
+  .primary {
+    width: 100%;
+    margin-top: 22px;
+    background: var(--fg);
+    color: #0a0a0c;
+    border: 0;
+    border-radius: 999px;
+    padding: 15px;
+    font-size: 0.88rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    font-weight: 700;
+    cursor: pointer;
+    text-align: center;
+    text-decoration: none;
+    display: block;
+  }
+  .primary:hover { background: var(--accent); }
+  .secondary {
+    width: 100%;
+    margin-top: 10px;
+    background: transparent;
+    color: var(--fg);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 13px;
+    font-size: 0.84rem;
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    cursor: pointer;
+  }
+  .summary { margin: 18px 0 0; padding: 16px; background: var(--bg); border: 1px solid var(--line); border-radius: 14px; }
+  .summary dl { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 6px 16px; }
+  .summary dt { color: var(--muted); }
+  .summary dd { margin: 0; overflow-wrap: anywhere; }
+  .note { margin: 16px 0 0; color: var(--muted); }
+  .note strong { color: var(--fg); font-weight: 600; }
+  textarea.copybox {
+    width: 100%;
+    margin-top: 12px;
+    min-height: 110px;
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 12px;
+    font: inherit;
+    font-size: 1rem;
+    resize: none;
+    color: var(--muted);
+  }
+  .toast { color: var(--ok); min-height: 1.3em; margin: 8px 0 0; text-align: center; }
+
+  .stock { display:block; margin-top:5px; color:var(--ok); font-size:.82rem; font-weight:500; }
+  .stock.zero { color:var(--accent); }
+  .stock.unknown { color:var(--muted); }
+  .row .go { text-align:right; }
+  .admin-page { padding-top:30px; padding-bottom:60px; }
+  .admin-login { max-width:450px; }
+  .admin-login input, .admin-qty { background:var(--surface); border:1px solid var(--line); border-radius:9px; padding:12px; width:100%; margin-bottom:13px; }
+  .admin-item { border-bottom:1px solid var(--line); padding:15px 0; }
+  .admin-item strong { display:block; margin-bottom:12px; overflow-wrap:anywhere; }
+  .admin-controls { display:flex; flex-wrap:wrap; align-items:end; gap:10px; }
+  .admin-controls label { flex:1; min-width:75px; font-size:.8rem; color:var(--muted); }
+  .admin-controls input { display:block; margin-top:5px; }
+  .admin-controls button { background:var(--fg); color:#111; border:0; border-radius:10px; padding:13px 16px; cursor:pointer; }
+  .admin-item .feedback { margin-top:5px; font-size:.86rem; color:var(--accent); }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+</style>
+
+<header class="wrap top">
+  <button type="button" class="brand" id="brand" aria-label="Liebe zum Duft, zur Startseite">Liebe zum Duft</button>
+  <nav class="nav" aria-label="Hauptmenü">
+    <button type="button" id="nav-start" aria-current="page">Start</button>
+    <button type="button" id="nav-duefte">Meine Düfte</button>
+    <button type="button" id="nav-admin">Admin</button>
+  </nav>
+</header>
+
+<main>
+  <!-- Startseite -->
+  <section id="view-start" aria-label="Startseite">
+    <h1 class="sr-only">Liebe zum Duft</h1>
+    <div class="hero-art">
+      <img src="hero.jpg" width="1024" height="1010" alt="Liebe zum Duft. Drei Parfümflakons mit goldenen Details vor dunkelblauem Verlauf.">
+    </div>
+
+    <div class="wrap intro">
+      <p class="tagline">Finde den Duft, der zu dir gehört.</p>
+      <p class="body">
+        Jeder Duft in meiner Sammlung hat <em>40 % Ölanteil</em>. Das gibt ihm Tiefe, kräftige Intensität und einen langen Halt auf der Haut.
+        Von frisch bis Oud, von Vanille bis Musk: Aus <span id="total">vielen</span> Düften suchst du dir deinen aus, wählst die Größe und reservierst ihn bei mir.
+      </p>
+
+      <div class="oil">
+        <div class="big">40&nbsp;%</div>
+        <div class="txt"><b>Ölanteil</b>in jedem Duft, für Intensität und langen Halt</div>
+      </div>
+
+      <p class="prices-title">Unsere Preise</p>
+      <ul class="prices">
+        <li><span class="ml">30 ml</span><span class="eur">25 €</span></li>
+        <li><span class="ml">50 ml</span><span class="eur">35 €</span></li>
+        <li><span class="ml">100 ml</span><span class="eur">45 €</span></li>
+      </ul>
+
+      <button type="button" class="cta" id="cta">Meine Düfte ansehen</button>
+    </div>
+  </section>
+
+  <!-- Düfte -->
+  <section id="view-duefte" class="wrap" aria-labelledby="duefte-title" hidden>
+    <button type="button" class="back" id="back">← Zur Startseite</button>
+    <div class="section-head">
+      <h2 id="duefte-title">Meine Düfte</h2>
+      <p class="count" id="count" aria-live="polite"></p>
+    </div>
+    <div class="search-bar">
+      <label class="lbl sr-only" for="q">Duft suchen</label>
+      <input id="q" class="search" type="search" placeholder="Duft oder Marke suchen" autocomplete="off" enterkeyhint="search">
+    </div>
+    <div class="chips" id="chips" role="group" aria-label="Nach Marke filtern"></div>
+    <div id="list"></div>
+  </section>
+  <section id="view-admin" class="wrap admin-page" hidden aria-labelledby="admin-title">
+    <h2 id="admin-title">Bestand verwalten</h2>
+    <p id="admin-status" role="status">Bitte anmelden, um Bestände zu bearbeiten.</p>
+    <form id="admin-login" class="admin-login">
+      <label class="lbl" for="admin-email">Admin-E-Mail</label><input id="admin-email" type="email" required autocomplete="username">
+      <label class="lbl" for="admin-password">Passwort</label><input id="admin-password" type="password" required autocomplete="current-password">
+      <button class="primary" type="submit">Anmelden</button>
+    </form>
+    <div id="admin-workspace" hidden>
+      <button type="button" class="secondary" id="admin-logout">Abmelden</button>
+      <p class="note">Bestand als Anzahl verfügbarer Flakons pro Duft und Größe. Bei 0 erscheint „Bestellbar“. Änderungen sind nach dem Speichern für alle Besucher sichtbar.</p>
+      <label class="lbl" for="admin-search">Duft suchen</label>
+      <input id="admin-search" class="search" type="search" placeholder="Duftname suchen">
+      <div id="admin-items"></div>
+    </div>
+  </section>
+</main>
+
+<footer class="wrap">
+  <div class="script">Liebe zum Duft</div>
+  <p>Eine Reservierung ist erst fest, wenn ich sie per WhatsApp bestätigt habe.</p>
+  <p>Auf dem iPhone: Teilen-Symbol antippen, dann „Zum Home-Bildschirm“, damit die Seite wie eine App startet.</p>
+</footer>
+
+<div class="veil" id="veil" hidden>
+  <div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-title"></div>
+</div>
+
+<script src="config.js"></script>
+<script>
+(function () {
+  // Nummer für die Reservierungs-Nachricht (international, ohne + und ohne Leerzeichen).
+  var ADMIN_WHATSAPP = "4917670499636";
+  var PRICES = { 30: 25, 50: 35, 100: 45 };
+
+  var RAW = [
+    "Louis Vuitton California Dream","Louis Vuitton Orage","Louis Vuitton L'Immensité","Louis Vuitton On the Beach","Louis Vuitton Myriad","Louis Vuitton Fleur du Desert","Tom Ford Cherry Smoke","GPG Fleur du Mal","GPG Divine","JPG Le Belle Paradiese Garden W","JPG Scandal Absolutly","Parfums de Marly Herod","De Marly Oriana","PDM Pegasus","YSL La Nuit de l'homme","Armani Code Absolue (m)","Xerjoff Coro","Xerjoff 40 Knots","Xerjoff Ouverture","Xerjoff La Capitale",
+    "Xerjoff Italica","Xerjoff Amber Star","Xerjoff Torino 24","Xerjoff Gran Ballo","Montale Honey Aoud","Montale Black Aoud","Montale Infinity","Montale Chocolate Greedy","Versace Eros Energy","Mancera Vanille Rose","Mancera Hibiscus Mahajad","Dior Oud Ispahan","Rabanne Lady Million","Paco Rabanne Fame","Initio Musk Therapy","Initio Atomic Rose","Chloe","Chloe Oud Malaki","Chloe Intense","Dior Feve Delicieux",
+    "Dior Sakura","Kilian Black Phantom","Kilian Intoxicated","Kilian Love Don't Be Shy","Lancome Tresor Midnight Rose","Lancome Tresor","Lancome Idole","Guerlain Vanilla Planifolia Extrait 21","Hugo Boss Bottled Elixir","Boss Orange","Mon Guerlain","Carolina Herrera Good Girl Velvet Fatale","Carolina Herrera Bad Boy","Atkinsons Oud Save The King","Atkinsons Oud Save The Queen","Burberry Her Elixir","Prada Luna Rossa Ocean","Escada Rockin' Rio","Clive Christian 1872","Le Labo Bergamotte 22",
+    "Le Labo Baie 19","Byredo Blanche","Gucci II","Bvlgari Petits et Mamans","Bvlgari Omnia Crystalline","Creed Virgin Island Water","Rosendo Mateu N°5","Tiziana Terenzi Cassiopea","Marc Jacobs Daisy","Sihr Al-lel","Black Lucas","Joop Nightflight","Weden London","Platinum Egoiste","Frederic Malle The Moon","Frederic Malle Musc Ravageur","Bal d'Afrique","Roja Elysium Pour Homme","DS & Durga Pistachio","Givenchy L'Interdit Rouge",
+    "Armani Code Absolue","Zadig & Voltaire This Is Her","Safari Extrait Abed Elsamad Elkurachi","New York","Roberto Ugolini Rosso 17","Diptique Philosykos EdP","Cocaine","Fragrance du Bois Oud Jaune Intense","Penhaligons The Omniscient Mr Thompson","Amouage Guidance","Hermes Ambre Narguile","Hermes Monsieur Li","Anfas Salam","Profumo Roma Sorriso","BDK Gris Charnel","Mirage Paris Sandal Musk","Lolita Lempicka","Spirit of Dubai BAZ","Victoria Secret Bombshell","DKNY Red Delicious",
+    "Spicebomb Infrared","Nishane Wulong Cha","TNT","Golden Sand","Clive Christian X","One Million Gold","Kayali Sweet Banane","YSL Libre Vanille","Blue for Man Rasasi","Romance Rasasi","Escada Magnetism","Escada Taj Sunset","Zara Rose","Versace Bright Crystal","Gianfranco Ferre Men","Black Likes","Cartier Pasha de Cartier","Polo Blue","Armani Acqua di Giò Profondo","Dunhill London",
+    "Lucky Noir (Man)","Elie Saab Le Parfüm","Calvin Klein Downtown","Adidas","Ralph Lauren","Malizia","Dehn Al Oud","Madina Ghubar Alfida","Alrisalah Oud","Johnson","Invictus Intense","Invictus Aqua","Lucky Man","Kayali Vanilla Candy Rock Sugar","Prada Candy","Rochas Men","American Sport","Oud Mekah","Gucci Oud","Versace Pour Homme",
+    "Kazanova","Desire Blue","Hugo Iced","Viagra","Sauvage Balade Sovage","Du'aa Aljanna","Diesel","Amareej","Franko Fahre","Escada Tropical","Burberry Weekend","Gucci Guilty","Oud Ghazal Blend","Imperial Bois","Louis Vuitton Symphony","Issey Miyake","YSL Babycat","Montale Arabians Musk","Clive Christian Jump Up and Kiss Me","Paco Rabanne Olympea",
+    "Xerjoff Elle","Imperial Valley Gissah","Versace Dylan Purple","Reudez Paris","Modern Musk","Nishane Nefs","The Musc","Hamol","Creed Aventus Absolu","Caramel","Erdbeere Premium","Cherry","Gardenia","Vanilla","Wassermelone","Berry Musk","Berry Musk Tut","Oud Asuad","Hajar Asuad","Amber",
+    "Tom Ford Vanilla Sex","Tom Ford Rose Prick","Boss Alive","Boss Bottled","Molecule 01","Molecule 02","Chanel 212","Chanel Chance","Mancera Oud Maracuja","Carolina Herrera Good Girl Blush","Kayali Vanilla 28","Cocos","Yasmin","Full","Versace Crystal Noir","Calvin Klein Eternity","Armani Amber","Amber Narguile","Kilian Apple Brandy","Patchouli",
+    "YSL Y","Mango Exotik","Rotes Halfeti","Louis Vuitton Stellar Times","Zadig & Voltaire Girls Can Do Anything","Nikos Sculpture","Laura Biagiotti Roma Uomo","Spicebomb Extreme","Armani Code (M)","White Sweet Tom Ford","Guerlain L'Homme Idéal","Tom Ford Noir de Noir","Good Girl Gone Bad","Chanel Egoiste","Jo Malone Wood Sage & Sea Salt","Narciso Rodriguez Pure Musk","Burberry Her","Fico di Amalfi","Kilian Smoking Hot","Azzaro The Most Wanted",
+    "Ex Nihilo Blue Talisman","Gucci Flora","Parfums de Marly Oajan","Good of Fire","Schokolade","Bvlgari Tygar","Parfums de Marly Valaya","De Marly Kalan","Anfas Ishq","Dior Bois d'Argent","Xerjoff Starlight","Soleil Blanc","Dolce & Gabbana Devotion","Nishane Hacivat","JPG La Belle","Calvin Klein CK1","MFK Grand Soir","Louis Vuitton Attrapes Reves","Ganymede","Montale Tobacco Oud",
+    "Jouri","Wesal Wisal","Kenzo Homme","Skorpion","Paco Rabanne Strong Me","Carolina Herrera Sexy 212","Tom Ford Neroli Portofino","Tom Ford Fucking Fabulous","Mancera Red Tobacco","GPG Le Beau Paradise Garden","Guerlain Santal Royal","Initio Rehab","Narciso Rodriguez For Her","Dior Homme","Armani Vert Malachite","Kayali Eden Juicy Apple","Rasasi Egra For Men","Hamsat Hob Maison Asrar","Britney Spears Fantasy","Xerjoff Laylati",
+    "MFK Oud Satin Mood","Invictus Victory Elixir","Kenzo Flower","Dolce & Gabbana Light Blue","Xerjoff Save Me","Musk Asuad","Taharra Musk","Granatapfel Musk","Gucci Rush"
+  ];
+
+  // Marken, die als Präfix erkannt werden (längste zuerst prüfen).
+  var BRANDS = [
+    ["Parfums de Marly", ["Parfums de Marly", "De Marly", "PDM"]],
+    ["Louis Vuitton"], ["Tom Ford"], ["Carolina Herrera"], ["Clive Christian"], ["Frederic Malle"],
+    ["Paco Rabanne", ["Paco Rabanne", "Rabanne"]], ["Calvin Klein"], ["Zadig & Voltaire"],
+    ["Dolce & Gabbana"], ["Narciso Rodriguez"], ["Le Labo"], ["Hugo Boss", ["Hugo Boss", "Boss"]],
+    ["Xerjoff"], ["Montale"], ["Mancera"], ["Kilian"], ["Chanel"], ["Kayali"], ["Armani"],
+    ["Guerlain"], ["Versace"], ["Dior"], ["Gucci"], ["Initio"], ["Nishane"], ["Escada"],
+    ["Lancome"], ["Bvlgari"], ["Hermes"], ["Burberry"], ["Atkinsons"], ["Chloe"], ["Anfas"],
+    ["YSL"], ["JPG"], ["GPG"], ["MFK"], ["Rasasi"], ["Kenzo"], ["Prada"], ["Invictus"], ["Creed"]
+  ];
+  var PREFIXES = [];
+  BRANDS.forEach(function (b) {
+    (b[1] || [b[0]]).forEach(function (p) { PREFIXES.push({ prefix: p, brand: b[0] }); });
+  });
+  PREFIXES.sort(function (a, b) { return b.prefix.length - a.prefix.length; });
+
+  function split(name) {
+    for (var i = 0; i < PREFIXES.length; i++) {
+      var p = PREFIXES[i].prefix;
+      if (name.length > p.length + 1 && name.indexOf(p + " ") === 0) {
+        return { brand: PREFIXES[i].brand, title: name.slice(p.length + 1) };
+      }
+    }
+    return { brand: "", title: name };
+  }
+
+  var seen = {};
+  var ITEMS = [];
+  RAW.forEach(function (n) {
+    var key = n.toLowerCase();
+    if (seen[key]) return;
+    seen[key] = true;
+    var s = split(n);
+    ITEMS.push({ name: n, brand: s.brand, title: s.title });
+  });
+  var collator = new Intl.Collator("de", { sensitivity: "base", numeric: true });
+  ITEMS.sort(function (a, b) { return collator.compare(a.name, b.name); });
+
+  function letterOf(name) {
+    var c = name.charAt(0).toUpperCase();
+    var base = c.normalize("NFD").replace(/[̀-ͯ]/g, "");
+    return /[A-Z]/.test(base) ? base : "#";
+  }
+  // Gemeinsamer Lagerbestand aus Supabase; keine erfundenen Anfangsbestände.
+  var CONFIG = window.LZD_CONFIG || {};
+  var API_URL = String(CONFIG.supabaseUrl || "").replace(/\/$/, "");
+  var PUBLIC_KEY = String(CONFIG.supabaseAnonKey || "");
+  var configured = /^https:\/\//.test(API_URL) && !!PUBLIC_KEY;
+  var stock = Object.create(null);
+  var stockReady = false;
+  var accessToken = "";
+  function itemKey(item) { return item.name; }
+  function inventoryCount(item, size) {
+    var row = stock[itemKey(item)];
+    return row && Number.isInteger(row[size]) ? row[size] : null;
+  }
+  function stockText(item) {
+    if (!stockReady) return "Bestand wird geladen";
+    return SIZES.map(function(size) {
+      var n = inventoryCount(item, size);
+      return size + " ml: " + (n === null ? "nicht hinterlegt" : n === 0 ? "Bestellbar" : n + " verfügbar");
+    }).join(" · ");
+  }
+  function apiHeaders(auth) {
+    var headers = { apikey: PUBLIC_KEY, 'Content-Type': 'application/json' };
+    headers.Authorization = 'Bearer ' + (auth ? accessToken : PUBLIC_KEY);
+    return headers;
+  }
+  async function apiRequest(path, opts) {
+    var res = await fetch(API_URL + path, Object.assign({headers:apiHeaders(false)}, opts || {}));
+    if (!res.ok) {
+      var detail = await res.text();
+      throw new Error('Serverfehler ' + res.status + ': ' + detail.slice(0, 180));
+    }
+    if (res.status === 204) return null;
+    return res.json();
+  }
+  async function refreshStock() {
+    if (!configured) { stockReady = true; render(); return; }
+    try {
+      var rows = await apiRequest('/rest/v1/perfume_stock?select=perfume_name,size_ml,quantity&limit=10000');
+      stock = Object.create(null);
+      rows.forEach(function (r) {
+        if (!stock[r.perfume_name]) stock[r.perfume_name] = {};
+        stock[r.perfume_name][r.size_ml] = r.quantity;
+      });
+      stockReady = true;
+      render();
+    } catch (e) {
+      stockReady = false;
+      console.warn('Bestand konnte nicht geladen werden:', e);
+      render();
+    }
+  }
+  function norm(s) { return s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, ""); }
+
+  document.getElementById("total").textContent = ITEMS.length;
+
+  // ---- Ansichten ----
+  var viewStart = document.getElementById("view-start");
+  var viewList = document.getElementById("view-duefte");
+  var navStart = document.getElementById("nav-start");
+  var navList = document.getElementById("nav-duefte");
+
+  function show(view) {
+    var list = view === "duefte";
+    var admin = view === "admin";
+    viewStart.hidden = list || admin;
+    viewList.hidden = !list;
+    document.getElementById("view-admin").hidden = !admin;
+    navList.removeAttribute("aria-current"); navStart.removeAttribute("aria-current");
+    document.getElementById("nav-admin").removeAttribute("aria-current");
+    (admin ? document.getElementById("nav-admin") : list ? navList : navStart).setAttribute("aria-current", "page");
+    window.scrollTo(0, 0);
+    try { history.replaceState(null, "", "#" + (admin ? "admin" : list ? "duefte" : "start")); } catch (e) {}
+  }
+  document.getElementById("brand").addEventListener("click", function () { show("start"); });
+  navStart.addEventListener("click", function () { show("start"); });
+  navList.addEventListener("click", function () { show("duefte"); });
+  document.getElementById("cta").addEventListener("click", function () { show("duefte"); });
+  document.getElementById("back").addEventListener("click", function () { show("start"); });
+  document.getElementById("nav-admin").addEventListener("click", function () { show("admin"); });
+  if (location.hash === "#duefte") show("duefte");
+  if (location.hash === "#admin") show("admin");
+
+  // ---- Liste ----
+  var brandCount = {};
+  ITEMS.forEach(function (i) { if (i.brand) brandCount[i.brand] = (brandCount[i.brand] || 0) + 1; });
+  var chipBrands = Object.keys(brandCount).filter(function (b) { return brandCount[b] >= 4; })
+    .sort(function (a, b) { return brandCount[b] - brandCount[a] || collator.compare(a, b); });
+
+  var state = { q: "", brand: "" };
+  var chipsEl = document.getElementById("chips");
+  var listEl = document.getElementById("list");
+  var countEl = document.getElementById("count");
+  var qEl = document.getElementById("q");
+
+  function makeChip(label, value) {
+    var b = document.createElement("button");
+    b.type = "button";
+    b.className = "chip";
+    b.textContent = label;
+    b.dataset.value = value;
+    b.setAttribute("aria-pressed", value === state.brand ? "true" : "false");
+    b.addEventListener("click", function () {
+      state.brand = value;
+      Array.prototype.forEach.call(chipsEl.children, function (c) {
+        c.setAttribute("aria-pressed", c.dataset.value === state.brand ? "true" : "false");
+      });
+      render();
+    });
+    return b;
+  }
+  chipsEl.appendChild(makeChip("Alle", ""));
+  chipBrands.forEach(function (b) { chipsEl.appendChild(makeChip(b + " · " + brandCount[b], b)); });
+
+  function render() {
+    var q = norm(state.q.trim());
+    var shown = ITEMS.filter(function (i) {
+      if (state.brand && i.brand !== state.brand) return false;
+      return !q || norm(i.name).indexOf(q) !== -1;
+    });
+    countEl.textContent = shown.length === ITEMS.length
+      ? ITEMS.length + " Düfte von A bis Z"
+      : shown.length + " von " + ITEMS.length + " Düften";
+    listEl.textContent = "";
+    if (!shown.length) {
+      var e = document.createElement("p");
+      e.className = "empty";
+      e.textContent = "Dazu habe ich nichts gefunden. Probiere einen anderen Namen oder eine andere Marke.";
+      listEl.appendChild(e);
+      return;
+    }
+    var frag = document.createDocumentFragment();
+    var currentLetter = "", ul = null;
+    shown.forEach(function (item) {
+      var l = letterOf(item.name);
+      if (l !== currentLetter) {
+        currentLetter = l;
+        var h = document.createElement("h3");
+        h.className = "letter";
+        h.textContent = l;
+        frag.appendChild(h);
+        ul = document.createElement("ul");
+        ul.className = "list";
+        frag.appendChild(ul);
+      }
+      var li = document.createElement("li");
+      var btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "row";
+      var names = document.createElement("span");
+      names.className = "names";
+      if (item.brand) {
+        var bl = document.createElement("span");
+        bl.className = "brand-line";
+        bl.textContent = item.brand;
+        names.appendChild(bl);
+      }
+      var t = document.createElement("span");
+      t.className = "title";
+      t.textContent = item.title;
+      names.appendChild(t);
+      var availability = el("span", "stock" + (!stockReady ? " unknown" : ""), stockText(item));
+      names.appendChild(availability);
+      var go = document.createElement("span");
+      go.className = "go";
+      go.textContent = "Reservieren";
+      btn.appendChild(names);
+      btn.appendChild(go);
+      btn.addEventListener("click", function () { openSheet(item, btn); });
+      li.appendChild(btn);
+      ul.appendChild(li);
+    });
+    listEl.appendChild(frag);
+  }
+
+  var timer;
+  qEl.addEventListener("input", function () {
+    clearTimeout(timer);
+    timer = setTimeout(function () { state.q = qEl.value; render(); }, 80);
+  });
+
+  // ---- Reservierung ----
+  var veil = document.getElementById("veil");
+  var sheet = document.getElementById("sheet");
+  var lastFocus = null;
+  var SIZES = [30, 50, 100];
+
+  function lsGet(k) { try { return localStorage.getItem(k) || ""; } catch (e) { return ""; } }
+  function lsSet(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
+
+  function el(tag, cls, text) {
+    var n = document.createElement(tag);
+    if (cls) n.className = cls;
+    if (text != null) n.textContent = text;
+    return n;
+  }
+
+  function closeSheet() {
+    veil.hidden = true;
+    sheet.textContent = "";
+    document.body.style.overflow = "";
+    if (lastFocus && lastFocus.focus) lastFocus.focus();
+  }
+  veil.addEventListener("click", function (e) { if (e.target === veil) closeSheet(); });
+  document.addEventListener("keydown", function (e) { if (e.key === "Escape" && !veil.hidden) closeSheet(); });
+
+  function head(item) {
+    var wrap = el("div", "sheet-head");
+    var left = el("div");
+    if (item.brand) left.appendChild(el("p", "s-brand", item.brand));
+    var h = el("h3", null, item.title);
+    h.id = "sheet-title";
+    left.appendChild(h);
+    var x = el("button", "close", "×");
+    x.type = "button";
+    x.setAttribute("aria-label", "Schließen");
+    x.addEventListener("click", closeSheet);
+    wrap.appendChild(left);
+    wrap.appendChild(x);
+    return wrap;
+  }
+
+  function field(id, label, opts) {
+    var f = el("div", "field" + (opts.full ? " full" : ""));
+    var l = el("label", "lbl");
+    l.htmlFor = id;
+    l.appendChild(document.createTextNode(label));
+    if (opts.optional) l.appendChild(el("span", "opt", " (freiwillig)"));
+    var inp = el("input");
+    inp.id = id;
+    inp.type = opts.type || "text";
+    if (opts.autocomplete) inp.autocomplete = opts.autocomplete;
+    if (opts.inputmode) inp.inputMode = opts.inputmode;
+    inp.value = opts.value || "";
+    var err = el("p", "err");
+    err.id = id + "-err";
+    inp.setAttribute("aria-describedby", err.id);
+    f.appendChild(l); f.appendChild(inp); f.appendChild(err);
+    return { wrap: f, input: inp, err: err };
+  }
+
+  function openSheet(item, trigger) {
+    lastFocus = trigger;
+    sheet.textContent = "";
+    sheet.appendChild(head(item));
+
+    var form = el("form");
+    form.noValidate = true;
+
+    var fs = el("fieldset");
+    fs.appendChild(el("legend", null, "Größe"));
+    var sizes = el("div", "sizes");
+    SIZES.forEach(function (s, idx) {
+      var lab = el("label", "size");
+      var r = el("input");
+      r.type = "radio"; r.name = "size"; r.value = String(s);
+      if (idx === 1) r.checked = true;
+      var sp = el("span", null, s + " ml");
+      sp.appendChild(el("small", null, PRICES[s] + " €"));
+      lab.appendChild(r); lab.appendChild(sp);
+      sizes.appendChild(lab);
+    });
+    fs.appendChild(sizes);
+    form.appendChild(fs);
+    form.appendChild(el("p", "note", "Bestand: " + stockText(item)));
+
+    var fields = el("div", "fields");
+    var fn = field("f-first", "Vorname", { autocomplete: "given-name", value: lsGet("lzd-first") });
+    var ln = field("f-last", "Nachname", { autocomplete: "family-name", value: lsGet("lzd-last") });
+    var ph = field("f-phone", "Telefonnummer", { type: "tel", autocomplete: "tel", inputmode: "tel", optional: true, full: true, value: lsGet("lzd-phone") });
+    fields.appendChild(fn.wrap); fields.appendChild(ln.wrap); fields.appendChild(ph.wrap);
+    form.appendChild(fields);
+
+    var go = el("button", "primary", "Reservieren");
+    go.type = "submit";
+    form.appendChild(go);
+    sheet.appendChild(form);
+
+    form.addEventListener("submit", function (e) {
+      e.preventDefault();
+      var ok = true;
+      [fn, ln].forEach(function (f) {
+        var v = f.input.value.trim();
+        if (!v) {
+          f.err.textContent = "Bitte ausfüllen.";
+          f.input.setAttribute("aria-invalid", "true");
+          ok = false;
+        } else {
+          f.err.textContent = "";
+          f.input.removeAttribute("aria-invalid");
+        }
+      });
+      if (!ok) { (fn.input.value.trim() ? ln.input : fn.input).focus(); return; }
+      var size = form.querySelector('input[name="size"]:checked').value;
+      var data = { first: fn.input.value.trim(), last: ln.input.value.trim(), phone: ph.input.value.trim(), size: size };
+      lsSet("lzd-first", data.first); lsSet("lzd-last", data.last); lsSet("lzd-phone", data.phone);
+      showConfirm(item, data);
+    });
+
+    veil.hidden = false;
+    document.body.style.overflow = "hidden";
+    fn.input.focus({ preventScroll: true });
+  }
+
+  function showConfirm(item, d) {
+    var full = (item.brand ? item.brand + " " : "") + item.title;
+    var price = PRICES[d.size] + " €";
+    var available = inventoryCount(item, Number(d.size));
+    var msg = "Hallo, ich möchte " + (available === 0 ? "bestellen" : "reservieren") + ":\n" +
+      full + ", " + d.size + " ml (" + price + ")\n" +
+      "Name: " + d.first + " " + d.last +
+      (d.phone ? "\nTelefon: " + d.phone : "");
+
+    sheet.textContent = "";
+    sheet.appendChild(head(item));
+
+    var sum = el("div", "summary");
+    var dl = el("dl");
+    [["Duft", full], ["Größe", d.size + " ml"], ["Verfügbarkeit", stockText(item)], ["Preis", price], ["Name", d.first + " " + d.last]].concat(d.phone ? [["Telefon", d.phone]] : [])
+      .forEach(function (r) { dl.appendChild(el("dt", null, r[0])); dl.appendChild(el("dd", null, r[1])); });
+    sum.appendChild(dl);
+    sheet.appendChild(sum);
+
+    var note = el("p", "note");
+    note.appendChild(el("strong", null, "Noch ein Schritt: "));
+    note.appendChild(document.createTextNode("Sende die Nachricht per WhatsApp ab. Erst dann ist deine Reservierung bei mir angekommen."));
+    sheet.appendChild(note);
+
+    var wa = el("a", "primary", "Per WhatsApp senden");
+    wa.href = "https://wa.me/" + ADMIN_WHATSAPP + "?text=" + encodeURIComponent(msg);
+    wa.target = "_blank";
+    wa.rel = "noopener";
+    sheet.appendChild(wa);
+
+    var box = el("textarea", "copybox");
+    box.readOnly = true;
+    box.value = msg;
+    box.setAttribute("aria-label", "Nachrichtentext");
+    var toast = el("p", "toast");
+    toast.setAttribute("aria-live", "polite");
+    var copy = el("button", "secondary", "Text kopieren");
+    copy.type = "button";
+    copy.addEventListener("click", function () {
+      function fallback() { box.focus(); box.select(); toast.textContent = "Text markiert, jetzt kopieren."; }
+      try {
+        navigator.clipboard.writeText(msg).then(function () { toast.textContent = "Kopiert."; }, fallback);
+      } catch (e) { fallback(); }
+    });
+    sheet.appendChild(copy);
+    sheet.appendChild(toast);
+    sheet.appendChild(box);
+
+    var done = el("button", "secondary", "Fertig");
+    done.type = "button";
+    done.addEventListener("click", closeSheet);
+    sheet.appendChild(done);
+    sheet.scrollTop = 0;
+    wa.focus({ preventScroll: true });
+  }
+
+  // Administrationsbereich: Server-seitiger Login und Row Level Security schützen Änderungen.
+  var loginForm = document.getElementById("admin-login");
+  var workspace = document.getElementById("admin-workspace");
+  var adminStatus = document.getElementById("admin-status");
+  var adminItems = document.getElementById("admin-items");
+  var adminSearch = document.getElementById("admin-search");
+  if (!configured) {
+    adminStatus.textContent = "Online-Datenbank noch nicht eingerichtet. Bitte config.js und EINRICHTUNG.md beachten.";
+    loginForm.hidden = true;
+  }
+  loginForm.addEventListener('submit', async function(e) {
+    e.preventDefault();
+    adminStatus.textContent = 'Anmeldung wird geprüft …';
+    try {
+      var response = await fetch(API_URL + '/auth/v1/token?grant_type=password', {
+        method:'POST', headers:apiHeaders(false), body:JSON.stringify({email:document.getElementById('admin-email').value, password:document.getElementById('admin-password').value})
+      });
+      var data = await response.json();
+      if (!response.ok || !data.access_token) throw new Error('Ungültige Zugangsdaten.');
+      accessToken = data.access_token;
+      // Prüfen, ob Nutzer tatsächlich ein berechtigter Admin ist.
+      var verify = await fetch(API_URL + '/rest/v1/admin_users?select=user_id&limit=1', {headers:apiHeaders(true)});
+      var users = await verify.json();
+      if (!verify.ok || !Array.isArray(users) || users.length !== 1) throw new Error('Dieses Konto hat keine Adminberechtigung.');
+      loginForm.hidden = true; workspace.hidden = false;
+      document.getElementById('admin-password').value = '';
+      adminStatus.textContent = 'Angemeldet. Du kannst die Bestände bearbeiten.';
+      renderAdmin();
+    } catch(err) { accessToken = ''; adminStatus.textContent = err.message; }
+  });
+  document.getElementById('admin-logout').addEventListener('click', function() {
+    accessToken = ''; workspace.hidden = true; loginForm.hidden = false;
+    adminStatus.textContent = 'Abgemeldet.';
+  });
+  adminSearch.addEventListener('input', renderAdmin);
+  function renderAdmin() {
+    if (!accessToken) return;
+    adminItems.textContent = '';
+    var found = ITEMS.filter(function(i) { return norm(i.name).includes(norm(adminSearch.value.trim())); });
+    found.forEach(function(item) {
+      var wrap = el('div', 'admin-item');
+      wrap.appendChild(el('strong', null, item.name));
+      var controls = el('div', 'admin-controls');
+      var inputs = {};
+      SIZES.forEach(function(size) {
+        var lab = el('label', null, size + ' ml');
+        var input = el('input', 'admin-qty');
+        input.type = 'number'; input.min = '0'; input.step = '1'; input.inputMode = 'numeric';
+        var qty = inventoryCount(item, size);
+        input.value = qty === null ? '' : String(qty);
+        input.placeholder = '–';
+        lab.appendChild(input); controls.appendChild(lab); inputs[size] = input;
+      });
+      var btn = el('button', null, 'Speichern'); btn.type='button';
+      var feedback = el('div','feedback'); feedback.setAttribute('role','status');
+      btn.addEventListener('click', async function() {
+        var rows = [];
+        for (var j=0; j<SIZES.length; j++) {
+          var size=SIZES[j], val=inputs[size].value.trim();
+          if (!/^(0|[1-9]\d*)$/.test(val) || !Number.isSafeInteger(Number(val))) {
+            feedback.textContent='Bitte für jede Größe einen gültigen Bestand (0 oder mehr) eingeben.'; return;
+          }
+          rows.push({perfume_name:item.name,size_ml:size,quantity:Number(val)});
+        }
+        btn.disabled=true; feedback.textContent='Speichern …';
+        try {
+          var response=await fetch(API_URL+'/rest/v1/perfume_stock?on_conflict=perfume_name,size_ml', {
+            method:'POST', headers:Object.assign(apiHeaders(true),{Prefer:'resolution=merge-duplicates,return=minimal'}), body:JSON.stringify(rows)
+          });
+          if (!response.ok) throw new Error('Speichern fehlgeschlagen ('+response.status+').');
+          stock[item.name]=stock[item.name]||{};
+          rows.forEach(function(r) { stock[item.name][r.size_ml]=r.quantity; });
+          stockReady=true; render(); feedback.textContent='Gespeichert – online sichtbar.';
+        } catch(err) { feedback.textContent=err.message; }
+        finally { btn.disabled=false; }
+      });
+      controls.appendChild(btn); wrap.appendChild(controls); wrap.appendChild(feedback); adminItems.appendChild(wrap);
+    });
+    if (!found.length) adminItems.appendChild(el('p','empty','Kein Duft gefunden.'));
+  }
+  render();
+  refreshStock();
+  // Auch längere geöffnete Kundenseiten regelmäßig aktualisieren.
+  setInterval(function() { if (!document.hidden) refreshStock(); }, 60000);
+  document.addEventListener('visibilitychange', function() { if (!document.hidden) refreshStock(); });
+})();
+</script>
+
+</body></html>
