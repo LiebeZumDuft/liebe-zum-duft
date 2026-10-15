@@ -22,7 +22,7 @@ Das Original war eine reine statische HTML-Seite ohne gemeinsamen Server. Deshal
    ```
 
 6. Im Supabase-Projekt unter **Project Settings → API** die **Project URL** und den öffentlichen **anon/publishable key** kopieren. In `config.js` die Felder `supabaseUrl` und `supabaseAnonKey` eintragen. **Niemals `service_role` oder geheime Schlüssel in eine Webseite schreiben!**
-7. `index.html`, `hero.jpg` und `config.js` zusammen auf demselben Webhosting veröffentlichen (mit HTTPS). Die `.sql`-Datei und diese Anleitung müssen nicht öffentlich hochgeladen werden.
+7. `index.html`, `hero.jpg`, `markenmotiv.jpg` und `config.js` zusammen auf demselben Webhosting veröffentlichen (mit HTTPS). Die `.sql`-Datei und diese Anleitung müssen nicht öffentlich hochgeladen werden.
 8. Die Seite aufrufen, **Admin** wählen, mit dem angelegten Konto anmelden. Mit der Suche einen Duft finden, für jede Größe eine Stückzahl (auch 0) eintragen und **Speichern** drücken.
 9. Auf einem zweiten Gerät die öffentliche Seite öffnen und prüfen, ob die Bestände synchron erscheinen. WhatsApp-Reservierung testen.
 

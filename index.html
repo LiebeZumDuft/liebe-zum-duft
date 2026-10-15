@@ -102,6 +102,18 @@
     }
   }
 
+  /* Ruhiger Markenabschluss: bewusst schmaler als das Titelmotiv. */
+  .brand-editorial {
+    width: min(100% - 48px, 440px);
+    margin: 68px auto 56px;
+    overflow: hidden;
+    border-radius: 7px;
+  }
+  .brand-editorial img { display: block; width: 100%; height: auto; }
+  @media (max-width: 480px) {
+    .brand-editorial { width: min(100% - 40px, 380px); margin: 56px auto 44px; }
+  }
+
   .intro { text-align: center; margin-top: -28px; }
   .tagline {
     font-style: italic;
@@ -474,7 +486,7 @@
   <section id="view-start" aria-label="Startseite">
     <h1 class="sr-only">Liebe zum Duft</h1>
     <div class="hero-art">
-      <img src="hero.jpg" width="1024" height="1010" alt="Liebe zum Duft. Drei Parfümflakons mit goldenen Details vor dunkelblauem Verlauf.">
+      <img src="hero.jpg" width="1024" height="1536" alt="Ein Liebe zum Duft Parfümflakon in einer Hand vor dunklem Hintergrund.">
     </div>
 
     <div class="wrap intro">
@@ -498,6 +510,9 @@
 
       <button type="button" class="cta" id="cta">Meine Düfte ansehen</button>
     </div>
+    <figure class="brand-editorial">
+      <img src="markenmotiv.jpg" width="1024" height="1536" loading="lazy" decoding="async" alt="Liebe zum Duft – drei elegante Parfümflakons mit dem Schriftzug Fühl den Duft. Lebe die Liebe.">
+    </figure>
   </section>
 
   <!-- Düfte -->
