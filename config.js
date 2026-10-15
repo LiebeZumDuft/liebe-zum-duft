@@ -1,5 +1,7 @@
-// Öffentliche Supabase-Projektwerte eintragen (KEIN service_role-Schlüssel!).
+// Öffentliche Supabase-Projektwerte. Niemals Passwörter oder geheime API-Schlüssel hier eintragen!
 window.LZD_CONFIG = {
   supabaseUrl: "",
-  supabaseAnonKey: ""
+  supabaseAnonKey: "",
+  // E-Mail-Adresse des Bilal-Kontos in Supabase Authentication (kein Passwort).
+  adminLoginEmail: ""
 };

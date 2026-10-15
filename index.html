@@ -631,14 +631,15 @@
   .stock.unknown { color:#a99989; }
   .row .go { text-align:right; }
   .admin-page { padding-top:30px; padding-bottom:60px; }
-  .admin-login { max-width:450px; }
+  .admin-login { max-width:450px; padding:24px; border:1px solid rgba(220,199,162,.14); border-radius:22px; background:rgba(255,255,255,.02); }
   .admin-login input, .admin-qty { background:var(--surface); border:1px solid var(--line); border-radius:9px; padding:12px; width:100%; margin-bottom:13px; }
-  .admin-item { border-bottom:1px solid var(--line); padding:15px 0; }
+  .admin-item { border:1px solid rgba(220,199,162,.12); background:rgba(255,255,255,.018); border-radius:18px; padding:18px; margin-top:12px; }
   .admin-item strong { display:block; margin-bottom:12px; overflow-wrap:anywhere; }
   .admin-controls { display:flex; flex-wrap:wrap; align-items:end; gap:10px; }
   .admin-controls label { flex:1; min-width:75px; font-size:.8rem; color:var(--muted); }
   .admin-controls input { display:block; margin-top:5px; }
-  .admin-controls button { background:var(--fg); color:#111; border:0; border-radius:10px; padding:13px 16px; cursor:pointer; }
+  .admin-controls button { background:var(--accent); color:var(--accent-ink); border:0; border-radius:12px; padding:13px 18px; font-weight:700; cursor:pointer; }
+  .admin-controls button:disabled { opacity:.55; cursor:wait; }
   .admin-item .feedback { margin-top:5px; font-size:.86rem; color:var(--accent); }
   @media (max-width: 760px) {
     .brand-story,
@@ -758,15 +759,15 @@
   </section>
   <section id="view-admin" class="wrap admin-page" hidden aria-labelledby="admin-title">
     <h2 id="admin-title">Bestand verwalten</h2>
-    <p id="admin-status" role="status">Bitte anmelden, um Bestände zu bearbeiten.</p>
+    <p id="admin-status" role="status">Bitte mit dem Administratorkonto anmelden.</p>
     <form id="admin-login" class="admin-login">
-      <label class="lbl" for="admin-email">Admin-E-Mail</label><input id="admin-email" type="email" required autocomplete="username">
+      <label class="lbl" for="admin-username">Benutzername</label><input id="admin-username" type="text" value="Bilal" required autocomplete="username" autocapitalize="none" spellcheck="false">
       <label class="lbl" for="admin-password">Passwort</label><input id="admin-password" type="password" required autocomplete="current-password">
       <button class="primary" type="submit">Anmelden</button>
     </form>
     <div id="admin-workspace" hidden>
       <button type="button" class="secondary" id="admin-logout">Abmelden</button>
-      <p class="note">Bestand als Anzahl verfügbarer Flakons pro Duft und Größe. Bei 0 erscheint „Bestellbar“. Änderungen sind nach dem Speichern für alle Besucher sichtbar.</p>
+      <p class="note">Trage für jeden Duft die Stückzahl für 30, 50 und 100 ml ein. Bei 0 erscheint für Kunden „Bestellbar“. Änderungen sind nach dem Speichern für alle Besucher sichtbar.</p>
       <label class="lbl" for="admin-search">Duft suchen</label>
       <input id="admin-search" class="search" type="search" placeholder="Duftname suchen">
       <div id="admin-items"></div>
@@ -856,6 +857,7 @@
   var CONFIG = window.LZD_CONFIG || {};
   var API_URL = String(CONFIG.supabaseUrl || "").replace(/\/$/, "");
   var PUBLIC_KEY = String(CONFIG.supabaseAnonKey || "");
+  var ADMIN_LOGIN_EMAIL = String(CONFIG.adminLoginEmail || "").trim();
   var configured = /^https:\/\//.test(API_URL) && !!PUBLIC_KEY;
   var stock = Object.create(null);
   var stockReady = false;
@@ -1217,19 +1219,21 @@
   var adminStatus = document.getElementById("admin-status");
   var adminItems = document.getElementById("admin-items");
   var adminSearch = document.getElementById("admin-search");
-  if (!configured) {
-    adminStatus.textContent = "Online-Datenbank noch nicht eingerichtet. Bitte config.js und EINRICHTUNG.md beachten.";
+  if (!configured || !ADMIN_LOGIN_EMAIL) {
+    adminStatus.textContent = "Admin-Anmeldung noch nicht eingerichtet. Bitte config.js und ADMIN_EINRICHTEN.md beachten.";
     loginForm.hidden = true;
   }
   loginForm.addEventListener('submit', async function(e) {
     e.preventDefault();
+    var username = document.getElementById('admin-username').value.trim();
+    if (username !== 'Bilal') { adminStatus.textContent = 'Benutzername oder Passwort ist nicht korrekt.'; return; }
     adminStatus.textContent = 'Anmeldung wird geprüft …';
     try {
       var response = await fetch(API_URL + '/auth/v1/token?grant_type=password', {
-        method:'POST', headers:apiHeaders(false), body:JSON.stringify({email:document.getElementById('admin-email').value, password:document.getElementById('admin-password').value})
+        method:'POST', headers:apiHeaders(false), body:JSON.stringify({email:ADMIN_LOGIN_EMAIL, password:document.getElementById('admin-password').value})
       });
       var data = await response.json();
-      if (!response.ok || !data.access_token) throw new Error('Ungültige Zugangsdaten.');
+      if (!response.ok || !data.access_token) throw new Error('Benutzername oder Passwort ist nicht korrekt.');
       accessToken = data.access_token;
       // Prüfen, ob Nutzer tatsächlich ein berechtigter Admin ist.
       var verify = await fetch(API_URL + '/rest/v1/admin_users?select=user_id&limit=1', {headers:apiHeaders(true)});
@@ -1237,9 +1241,9 @@
       if (!verify.ok || !Array.isArray(users) || users.length !== 1) throw new Error('Dieses Konto hat keine Adminberechtigung.');
       loginForm.hidden = true; workspace.hidden = false;
       document.getElementById('admin-password').value = '';
-      adminStatus.textContent = 'Angemeldet. Du kannst die Bestände bearbeiten.';
+      adminStatus.textContent = 'Angemeldet als Bilal. Du kannst die Bestände bearbeiten.';
       renderAdmin();
-    } catch(err) { accessToken = ''; adminStatus.textContent = err.message; }
+    } catch(err) { accessToken = ''; adminStatus.textContent = err.message || 'Anmeldung fehlgeschlagen.'; }
   });
   document.getElementById('admin-logout').addEventListener('click', function() {
     accessToken = ''; workspace.hidden = true; loginForm.hidden = false;
