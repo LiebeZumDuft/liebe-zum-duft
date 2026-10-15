@@ -15,6 +15,10 @@
   .order-header{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:28px;flex-wrap:wrap}
   .order-header h4{font-size:1.5rem;margin:0;font-weight:500}.order-header span{font-size:.9rem;color:var(--muted)}
   .order-list{max-height:550px;overflow:auto;margin-top:12px}
+  .cart-qty{font-variant-numeric:tabular-nums;color:var(--accent)}
+  .cart-line{padding:12px 0;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;gap:12px;align-items:center}
+  .cart-line button{border:1px solid var(--line);background:transparent;border-radius:9px;padding:7px 12px;cursor:pointer}
+  #nav-cart{white-space:nowrap}
   .order-card{border:1px solid rgba(220,199,162,.12);border-radius:15px;margin-bottom:10px;padding:15px;display:flex;gap:15px;align-items:center;justify-content:space-between;flex-wrap:wrap;background:#11100e}
   .order-name{font-size:1.16rem}.order-meta{font-size:.88rem;color:var(--muted)}
   .order-state{font-size:.85rem;color:var(--accent);margin:3px 0}
@@ -693,6 +697,7 @@
   <nav class="nav" aria-label="Hauptmenü">
     <button type="button" id="nav-start" aria-current="page">Start</button>
     <button type="button" id="nav-duefte">Meine Düfte</button>
+    <button type="button" id="nav-cart">Warenkorb <span id="cart-count">0</span></button>
     <button type="button" id="nav-admin">Admin</button>
   </nav>
 </header>
@@ -1197,21 +1202,14 @@ if ('serviceWorker' in navigator) {
     quantityWrap.appendChild(quantityInput);
     form.appendChild(quantityWrap);
 
-    var fields = el("div", "fields");
-    var fn = field("f-first", "Vorname", { autocomplete: "given-name", value: lsGet("lzd-first") });
-    var ln = field("f-last", "Nachname", { autocomplete: "family-name", value: lsGet("lzd-last") });
-    var ph = field("f-phone", "Telefonnummer", { type: "tel", autocomplete: "tel", inputmode: "tel", optional: true, full: true, value: lsGet("lzd-phone") });
-    fields.appendChild(fn.wrap); fields.appendChild(ln.wrap); fields.appendChild(ph.wrap);
-    form.appendChild(fields);
-
-    var go = el("button", "primary", "Reservieren");
+    var go = el("button", "primary", "Zum Warenkorb hinzufügen");
     go.type = "submit";
     function updateOrderMode() {
       var chosen = Number(form.querySelector('input[name="size"]:checked').value);
       var available = inventoryCount(item, chosen);
       var ordering = available === 0;
-      go.textContent = ordering ? "Bestellen" : "Reservieren";
-      stockHint.textContent = available === null ? "Für diese Größe ist noch kein Bestand hinterlegt." : ordering ? "Aktuell 0 verfügbar · Bestellbar · Anfrage per WhatsApp" : available + " Flakons verfügbar · wird bei Reservierung abgezogen";
+      go.textContent = ordering ? "Bestellung in den Warenkorb" : "In den Warenkorb";
+      stockHint.textContent = available === null ? "Für diese Größe wurde noch kein Bestand erfasst." : ordering ? "Bestellbar · Kein Lagerbestand" : available + " Flakons verfügbar";
       quantityInput.max = String(ordering ? 20 : available === null ? 1 : Math.min(20, available));
       if (Number(quantityInput.value) > Number(quantityInput.max)) quantityInput.value = quantityInput.max;
     }
@@ -1219,33 +1217,22 @@ if ('serviceWorker' in navigator) {
     updateOrderMode();
     form.appendChild(go);
     sheet.appendChild(form);
-
     form.addEventListener("submit", function (e) {
       e.preventDefault();
-      var ok = true;
-      [fn, ln].forEach(function (f) {
-        var v = f.input.value.trim();
-        if (!v) {
-          f.err.textContent = "Bitte ausfüllen.";
-          f.input.setAttribute("aria-invalid", "true");
-          ok = false;
-        } else {
-          f.err.textContent = "";
-          f.input.removeAttribute("aria-invalid");
-        }
-      });
-      if (!ok) { (fn.input.value.trim() ? ln.input : fn.input).focus(); return; }
-      var size = form.querySelector('input[name="size"]:checked').value;
+      var size = Number(form.querySelector('input[name="size"]:checked').value);
       var quantity = Number(quantityInput.value);
-      var available = inventoryCount(item, Number(size));
-      if (!Number.isInteger(quantity) || quantity < 1 || quantity > 20 || (available !== 0 && (available === null || quantity > available))) {
-        stockHint.textContent = "Bitte eine gültige Stückzahl auswählen, die dem verfügbaren Bestand entspricht (maximal 20).";
-        quantityInput.focus();
+      var available = inventoryCount(item, size);
+      var current = cart.find(function(x){return x.name===item.name && x.size===size;});
+      var combined = quantity + (current ? current.quantity : 0);
+      if (!Number.isInteger(quantity) || quantity < 1 || combined > 20 || available === null || (available > 0 && combined > available)) {
+        stockHint.textContent = "Ungültige Stückzahl oder nicht genügend Bestand (inklusive Warenkorb).";
         return;
       }
-      var data = { first: fn.input.value.trim(), last: ln.input.value.trim(), phone: ph.input.value.trim(), size: size, quantity: quantity };
-      lsSet("lzd-first", data.first); lsSet("lzd-last", data.last); lsSet("lzd-phone", data.phone);
-      showConfirm(item, data);
+      if (current) current.quantity = combined;
+      else cart.push({name:item.name, size:size, quantity:quantity});
+      updateCartCount();
+      closeSheet();
+      openCart();
     });
 
     veil.hidden = false;
@@ -1253,107 +1240,72 @@ if ('serviceWorker' in navigator) {
     fn.input.focus({ preventScroll: true });
   }
 
-  function showConfirm(item, d) {
-    var full = (item.brand ? item.brand + " " : "") + item.title;
-    var price = (PRICES[d.size] * d.quantity) + " €";
-    var available = inventoryCount(item, Number(d.size));
-    var requestId = (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : null;
-    var reservationFinished = false;
-    var msg = "Hallo, ich möchte " + d.quantity + " × " + full + " (" + d.size + " ml) " + (available === 0 ? "bestellen" : "reservieren") + ".\n" +
-      "Gesamtpreis: " + price + "\n" +
-      "Name: " + d.first + " " + d.last +
-      (d.phone ? "\nTelefon: " + d.phone : "");
-
-    sheet.textContent = "";
-    sheet.appendChild(head(item));
-
-    var sum = el("div", "summary");
-    var dl = el("dl");
-    [["Duft", full], ["Größe", d.size + " ml"], ["Anzahl", String(d.quantity)], ["Verfügbarkeit", available === 0 ? "Bestellbar" : available + " verfügbar"], ["Gesamtpreis", price], ["Name", d.first + " " + d.last]].concat(d.phone ? [["Telefon", d.phone]] : [])
-      .forEach(function (r) { dl.appendChild(el("dt", null, r[0])); dl.appendChild(el("dd", null, r[1])); });
-    sum.appendChild(dl);
-    sheet.appendChild(sum);
-
-    var note = el("p", "note");
-    note.appendChild(el("strong", null, "Anfrage abschließen: "));
-    note.appendChild(document.createTextNode("Mit dem nächsten Klick wird deine Anfrage in der Übersicht erfasst. Bei verfügbarer Ware wird die gewählte Stückzahl vom Lagerbestand abgezogen; bei 0 wird eine Bestellanfrage ohne Abzug erfasst. Danach öffnet sich WhatsApp. Bitte die Nachricht dort auch wirklich absenden."));
-    sheet.appendChild(note);
-
-    var wa = el("button", "primary", available === 0 ? "Bestellen & WhatsApp öffnen" : "Reservieren & WhatsApp öffnen");
-    wa.type = "button";
-    var bookingStatus = el("p", "note");
-    bookingStatus.setAttribute("role", "status");
-    sheet.appendChild(wa);
-    sheet.appendChild(bookingStatus);
-    wa.addEventListener("click", async function() {
-      if (reservationFinished) {
-        window.open("https://wa.me/" + ADMIN_WHATSAPP + "?text=" + encodeURIComponent(msg), "_blank", "noopener");
-        return;
-      }
-      if (!configured || !requestId) {
-        bookingStatus.textContent = "Die Online-Reservierung ist nicht verfügbar. Bitte den Betreiber kontaktieren; es wurde kein Bestand abgezogen.";
-        return;
-      }
-      // Popup noch während der Nutzeraktion öffnen, damit Popupblocker es nicht verhindern.
-      var popup = window.open("about:blank", "_blank");
-      wa.disabled = true;
-      bookingStatus.textContent = "Bestand wird geprüft und Reservierung gespeichert …";
-      try {
-        var result = await apiRequest("/rest/v1/rpc/reserve_perfume", {
-          method: "POST",
-          body: JSON.stringify({ p_request_id: requestId, p_perfume_name: item.name, p_size_ml: Number(d.size), p_quantity: d.quantity })
-        });
-        if (result === "reserved") {
-          reservationFinished = true;
-          msg += "\nReservierungsnummer: " + requestId;
-          box.value = msg;
-          bookingStatus.textContent = "Reserviert: " + d.quantity + " Flakon(s) wurden vom Bestand abgezogen und im Dashboard erfasst. Bitte WhatsApp-Nachricht absenden.";
-          note.textContent = "Deine Reservierung ist im System vorgemerkt. Bitte sende die WhatsApp-Nachricht jetzt ab. Eine endgültige Bestätigung erfolgt persönlich.";
-          wa.textContent = "WhatsApp erneut öffnen";
-          await refreshStock();
-        } else if (result === "orderable") {
-          reservationFinished = true;
-          msg = msg.replace(" reservieren.", " bestellen.");
-          box.value = msg;
-          bookingStatus.textContent = "Bestellanfrage über " + d.quantity + " Flakon(s) ist im Dashboard erfasst. Kein Lagerabzug. Bitte WhatsApp-Nachricht absenden.";
-          wa.textContent = "WhatsApp erneut öffnen";
-          await refreshStock();
-        } else {
-          throw new Error(result === "not_registered" ? "Für diese Größe ist noch kein Bestand im Adminbereich hinterlegt." : result === "insufficient" ? "Nicht mehr genügend Flakons vorhanden. Bitte die Stückzahl reduzieren und neu starten." : "Reservierung konnte nicht abgeschlossen werden.");
-        }
-        var url = "https://wa.me/" + ADMIN_WHATSAPP + "?text=" + encodeURIComponent(msg);
-        if (popup && !popup.closed) popup.location.replace(url);
-        else bookingStatus.textContent += " Falls WhatsApp nicht geöffnet wurde, klicke erneut auf den Button.";
-      } catch (err) {
-        if (popup && !popup.closed) popup.close();
-        bookingStatus.textContent = (err && err.message ? err.message : "Verbindungsfehler") + " Es wurde keine neue Reservierung bestätigt. Bitte erneut versuchen.";
-      } finally { wa.disabled = false; }
+  // Ein gemeinsamer Warenkorb, eine Anfrage, eine WhatsApp-Nachricht.
+  var cart = [];
+  function updateCartCount(){
+    document.getElementById('cart-count').textContent = cart.reduce(function(n,x){return n+x.quantity;},0);
+  }
+  document.getElementById('nav-cart').addEventListener('click',openCart);
+  function openCart(){
+    lastFocus=document.getElementById('nav-cart');
+    sheet.textContent='';
+    var title=el('h3',null,'Dein Warenkorb');title.id='sheet-title';sheet.appendChild(title);
+    if(!cart.length){sheet.appendChild(el('p','note','Dein Warenkorb ist noch leer.'));}
+    cart.forEach(function(line){
+      var row=el('div','cart-line'),left=el('div');
+      left.appendChild(el('div',null,line.name));
+      left.appendChild(el('div','order-meta',line.quantity+' × '+line.size+' ml · '+(line.quantity*PRICES[line.size])+' €'));
+      var remove=el('button',null,'Entfernen');remove.type='button';
+      remove.addEventListener('click',function(){cart=cart.filter(function(x){return x!==line;});updateCartCount();openCart();});
+      row.appendChild(left);row.appendChild(remove);sheet.appendChild(row);
     });
-
-    var box = el("textarea", "copybox");
-    box.readOnly = true;
-    box.value = msg;
-    box.setAttribute("aria-label", "Nachrichtentext");
-    var toast = el("p", "toast");
-    toast.setAttribute("aria-live", "polite");
-    var copy = el("button", "secondary", "Text kopieren");
-    copy.type = "button";
-    copy.addEventListener("click", function () {
-      function fallback() { box.focus(); box.select(); toast.textContent = "Text markiert, jetzt kopieren."; }
-      try {
-        navigator.clipboard.writeText(msg).then(function () { toast.textContent = "Kopiert."; }, fallback);
-      } catch (e) { fallback(); }
-    });
-    sheet.appendChild(copy);
-    sheet.appendChild(toast);
-    sheet.appendChild(box);
-
-    var done = el("button", "secondary", "Fertig");
-    done.type = "button";
-    done.addEventListener("click", closeSheet);
-    sheet.appendChild(done);
-    sheet.scrollTop = 0;
-    wa.focus({ preventScroll: true });
+    if(cart.length){
+      var total=cart.reduce(function(n,x){return n+x.quantity*PRICES[x.size];},0);
+      sheet.appendChild(el('h3',null,'Gesamtwert: '+total+' €'));
+      var form=el('form');
+      var fields=el('div','fields');
+      var fn=field('cart-first','Vorname',{autocomplete:'given-name',value:lsGet('lzd-first')});
+      var ln=field('cart-last','Nachname',{autocomplete:'family-name',value:lsGet('lzd-last')});
+      var ph=field('cart-phone','Telefon (freiwillig)',{type:'tel',autocomplete:'tel',full:true,value:lsGet('lzd-phone')});
+      fields.appendChild(fn.wrap);fields.appendChild(ln.wrap);fields.appendChild(ph.wrap);form.appendChild(fields);
+      form.appendChild(el('p','note','Erst mit dem nächsten Klick wird die gesamte Anfrage gespeichert und vorhandener Bestand abgezogen. Anschließend öffnet sich WhatsApp. Bitte die Nachricht dort versenden.'));
+      var submit=el('button','primary','Gesamte Anfrage per WhatsApp senden');submit.type='submit';form.appendChild(submit);
+      var status=el('p','note');status.setAttribute('role','status');form.appendChild(status);
+      var requestId=(window.crypto&&crypto.randomUUID)?crypto.randomUUID():null;
+      var finished=false;var message='';
+      form.addEventListener('submit',async function(e){
+        e.preventDefault();
+        if(finished){window.open('https://wa.me/'+ADMIN_WHATSAPP+'?text='+encodeURIComponent(message),'_blank','noopener');return;}
+        if(!fn.input.value.trim()||!ln.input.value.trim()){status.textContent='Bitte Vor- und Nachnamen eingeben.';return;}
+        if(!configured||!requestId){status.textContent='Online-Anfragen sind momentan nicht verfügbar.';return;}
+        var snapshot=cart.map(function(x){return {name:x.name,size:x.size,quantity:x.quantity};});
+        var first=fn.input.value.trim(),last=ln.input.value.trim(),phone=ph.input.value.trim();
+        var popup=window.open('about:blank','_blank');submit.disabled=true;
+        status.textContent='Anfrage wird gespeichert …';
+        try{
+          var response=await apiRequest('/rest/v1/rpc/submit_perfume_cart',{
+            method:'POST',body:JSON.stringify({p_cart_id:requestId,p_first_name:first,p_last_name:last,p_phone:phone,p_items:snapshot})
+          });
+          if(!Array.isArray(response)||response.length!==snapshot.length)throw new Error('Unvollständige Rückmeldung von Supabase.');
+          var lines=response.map(function(r){
+            return (r.reservation_type==='orderable'?'Bestellung':'Reservierung')+': '+r.quantity+' × '+r.perfume_name+' ('+r.size_ml+' ml) – '+(r.quantity*PRICES[r.size_ml])+' €';
+          });
+          message='Hallo, ich möchte folgende Düfte anfragen:\n'+lines.join('\n')+'\nGesamtwert: '+total+' €\nName: '+first+' '+last+(phone?'\nTelefon: '+phone:'')+'\nAnfragenummer: '+requestId;
+          finished=true;cart=[];updateCartCount();
+          lsSet('lzd-first',first);lsSet('lzd-last',last);lsSet('lzd-phone',phone);
+          status.textContent='Anfrage gespeichert. Bitte WhatsApp-Nachricht absenden. Zum erneuten Öffnen nochmals klicken.';
+          submit.textContent='WhatsApp erneut öffnen';
+          await refreshStock();
+          var url='https://wa.me/'+ADMIN_WHATSAPP+'?text='+encodeURIComponent(message);
+          if(popup&&!popup.closed)popup.location.replace(url);
+          else status.textContent+=' Bitte WhatsApp erneut öffnen.';
+        }catch(err){if(popup&&!popup.closed)popup.close();status.textContent='Fehler: '+(err.message||String(err))+' – Anfrage nicht bestätigt.';}
+        finally{submit.disabled=false;}
+      });
+      sheet.appendChild(form);
+    }
+    var close=el('button','secondary','Schließen');close.type='button';close.addEventListener('click',closeSheet);sheet.appendChild(close);
+    veil.hidden=false;document.body.style.overflow='hidden';sheet.scrollTop=0;
   }
 
   // Administrationsbereich: Server-seitiger Login und Row Level Security schützen Änderungen.
@@ -1417,15 +1369,15 @@ if ('serviceWorker' in navigator) {
     var status = document.getElementById('dashboard-status');
     status.textContent='Reservierungen werden geladen …';
     try {
-      var res=await fetch(API_URL+'/rest/v1/stock_reservations?select=request_id,perfume_name,size_ml,created_at,price_eur,quantity,paid_at,reservation_type&order=created_at.desc&limit=10000',{headers:apiHeaders(true)});
+      var res=await fetch(API_URL+'/rest/v1/stock_reservations?select=request_id,perfume_name,size_ml,created_at,price_eur,quantity,paid_at,reservation_type,first_name,last_name,phone,cancelled_at,cart_id&order=created_at.desc&limit=10000',{headers:apiHeaders(true)});
       if (!res.ok) throw new Error('HTTP '+res.status+'. Bitte zuerst ADMIN_DASHBOARD_EINRICHTEN.sql in Supabase ausführen.');
       dashboardRows=await res.json();drawDashboard();
     }catch(err){status.textContent='Dashboard konnte nicht geladen werden: '+err.message;}
   }
   function drawDashboard(){
     var since=sinceDate();
-    var newRows=dashboardRows.filter(function(r){return new Date(r.created_at)>=since;});
-    var paidRows=dashboardRows.filter(function(r){return r.paid_at && new Date(r.paid_at)>=since;});
+    var newRows=dashboardRows.filter(function(r){return !r.cancelled_at && new Date(r.created_at)>=since;});
+    var paidRows=dashboardRows.filter(function(r){return !r.cancelled_at && r.paid_at && new Date(r.paid_at)>=since;});
     var reserved=newRows.filter(function(r){return r.reservation_type==='reserved';});
     var orderable=newRows.filter(function(r){return r.reservation_type==='orderable';});
     function count(row){return Number(row.quantity) || 1;}
@@ -1439,8 +1391,9 @@ if ('serviceWorker' in navigator) {
     if (!newRows.length){list.appendChild(el('p','empty','Noch keine Reservierungen in diesem Zeitraum.'));return;}
     newRows.slice(0,100).forEach(function(r){
       var card=el('div','order-card'),info=el('div');
-      info.appendChild(el('div','order-name',r.perfume_name));
+      info.appendChild(el('div','order-name',(r.first_name ? r.first_name+' '+(r.last_name||'') : 'Kunde nicht erfasst (Altbestand)')+' · '+r.perfume_name));
       info.appendChild(el('div','order-meta',count(r)+' × '+r.size_ml+' ml · '+euro.format(amount(r))+' · '+new Date(r.created_at).toLocaleString('de-DE')));
+      if(r.cart_id)info.appendChild(el('div','order-meta','Warenkorb: '+r.cart_id.slice(0,8)));
       info.appendChild(el('div','order-state',r.reservation_type==='orderable'?'Bestellanfrage (kein Lagerabzug)':r.paid_at?'Bezahlt':'Reserviert · Zahlung offen'));
       card.appendChild(info);
       var btn=el('button','order-action'+(r.paid_at?' paid':''),r.paid_at?'Zahlung zurücknehmen':'Als bezahlt markieren');btn.type='button';
@@ -1453,7 +1406,18 @@ if ('serviceWorker' in navigator) {
           await loadDashboard();
         }catch(e){alert(e.message);btn.disabled=false;}
       });
-      card.appendChild(btn);list.appendChild(card);
+      card.appendChild(btn);
+      var cancel=el('button','order-action','Stornieren');cancel.type='button';
+      cancel.addEventListener('click',async function(){
+        if(!confirm('Diese Position stornieren? Der Reservierungswert wird aus der Auswertung entfernt; reservierter Bestand wird wieder freigegeben.'))return;
+        cancel.disabled=true;
+        try{
+          var resp=await fetch(API_URL+'/rest/v1/rpc/cancel_perfume_reservation',{method:'POST',headers:apiHeaders(true),body:JSON.stringify({p_request_id:r.request_id})});
+          if(!resp.ok)throw new Error('Storno fehlgeschlagen ('+resp.status+').');
+          await loadDashboard();await refreshStock();
+        }catch(err){alert(err.message);cancel.disabled=false;}
+      });
+      card.appendChild(cancel);list.appendChild(card);
     });
   }
 
