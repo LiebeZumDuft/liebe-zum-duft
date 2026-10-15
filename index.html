@@ -761,7 +761,7 @@
     <h2 id="admin-title">Bestand verwalten</h2>
     <p id="admin-status" role="status">Bitte mit dem Administratorkonto anmelden.</p>
     <form id="admin-login" class="admin-login">
-      <label class="lbl" for="admin-username">Benutzername</label><input id="admin-username" type="text" value="Bilal" required autocomplete="username" autocapitalize="none" spellcheck="false">
+      <label class="lbl" for="admin-username">Benutzername</label><input id="admin-username" type="text" required autocomplete="off" autocapitalize="none" spellcheck="false">
       <label class="lbl" for="admin-password">Passwort</label><input id="admin-password" type="password" required autocomplete="current-password">
       <button class="primary" type="submit">Anmelden</button>
     </form>
@@ -777,7 +777,7 @@
 
 <footer class="wrap">
   <div class="script">Liebe zum Duft</div>
-  <p>Eine Reservierung ist erst fest, wenn ich sie per WhatsApp bestätigt habe.</p>
+  <p>Die Online-Reservierung merkt verfügbare Flakons vor. Die endgültige Zusage erfolgt nach persönlicher WhatsApp-Bestätigung.</p>
   <p>Auf dem iPhone: Teilen-Symbol antippen, dann „Zum Home-Bildschirm“, damit die Seite wie eine App startet.</p>
 </footer>
 
@@ -932,7 +932,11 @@
   navList.addEventListener("click", function () { show("duefte"); });
   document.getElementById("cta").addEventListener("click", function () { show("duefte"); });
   document.getElementById("back").addEventListener("click", function () { show("start"); });
-  document.getElementById("nav-admin").addEventListener("click", function () { show("admin"); });
+  document.getElementById("nav-admin").addEventListener("click", function () {
+    document.getElementById("admin-username").value = "";
+    document.getElementById("admin-password").value = "";
+    show("admin");
+  });
   if (location.hash === "#duefte") show("duefte");
   if (location.hash === "#admin") show("admin");
 
@@ -1161,6 +1165,8 @@
     var full = (item.brand ? item.brand + " " : "") + item.title;
     var price = PRICES[d.size] + " €";
     var available = inventoryCount(item, Number(d.size));
+    var requestId = (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : null;
+    var reservationFinished = false;
     var msg = "Hallo, ich möchte " + (available === 0 ? "bestellen" : "reservieren") + ":\n" +
       full + ", " + d.size + " ml (" + price + ")\n" +
       "Name: " + d.first + " " + d.last +
@@ -1177,15 +1183,60 @@
     sheet.appendChild(sum);
 
     var note = el("p", "note");
-    note.appendChild(el("strong", null, "Noch ein Schritt: "));
-    note.appendChild(document.createTextNode("Sende die Nachricht per WhatsApp ab. Erst dann ist deine Reservierung bei mir angekommen."));
+    note.appendChild(el("strong", null, "Reservierung abschließen: "));
+    note.appendChild(document.createTextNode("Mit dem nächsten Klick wird bei verfügbarem Bestand genau ein Flakon für dich reserviert und sofort vom Online-Bestand abgezogen. Danach öffnet sich WhatsApp. Bitte die Nachricht dort wirklich absenden. Bei Bestand 0 wird stattdessen eine unverbindliche Bestellanfrage geöffnet."));
     sheet.appendChild(note);
 
-    var wa = el("a", "primary", "Per WhatsApp senden");
-    wa.href = "https://wa.me/" + ADMIN_WHATSAPP + "?text=" + encodeURIComponent(msg);
-    wa.target = "_blank";
-    wa.rel = "noopener";
+    var wa = el("button", "primary", "Reservierung anlegen & WhatsApp öffnen");
+    wa.type = "button";
+    var bookingStatus = el("p", "note");
+    bookingStatus.setAttribute("role", "status");
     sheet.appendChild(wa);
+    sheet.appendChild(bookingStatus);
+    wa.addEventListener("click", async function() {
+      if (reservationFinished) {
+        window.open("https://wa.me/" + ADMIN_WHATSAPP + "?text=" + encodeURIComponent(msg), "_blank", "noopener");
+        return;
+      }
+      if (!configured || !requestId) {
+        bookingStatus.textContent = "Die Online-Reservierung ist nicht verfügbar. Bitte den Betreiber kontaktieren; es wurde kein Bestand abgezogen.";
+        return;
+      }
+      // Popup noch während der Nutzeraktion öffnen, damit Popupblocker es nicht verhindern.
+      var popup = window.open("about:blank", "_blank");
+      wa.disabled = true;
+      bookingStatus.textContent = "Bestand wird geprüft und Reservierung gespeichert …";
+      try {
+        var result = await apiRequest("/rest/v1/rpc/reserve_perfume", {
+          method: "POST",
+          body: JSON.stringify({ p_request_id: requestId, p_perfume_name: item.name, p_size_ml: Number(d.size) })
+        });
+        if (result === "reserved") {
+          reservationFinished = true;
+          msg += "\nReservierungsnummer: " + requestId;
+          box.value = msg;
+          bookingStatus.textContent = "Reserviert: 1 Flakon wurde vom Bestand abgezogen. Bitte WhatsApp-Nachricht absenden.";
+          note.textContent = "Deine Reservierung ist im System vorgemerkt. Bitte sende die WhatsApp-Nachricht jetzt ab. Eine endgültige Bestätigung erfolgt persönlich.";
+          wa.textContent = "WhatsApp erneut öffnen";
+          await refreshStock();
+        } else if (result === "orderable") {
+          reservationFinished = true;
+          msg = msg.replace("ich möchte reservieren", "ich möchte bestellen");
+          box.value = msg;
+          bookingStatus.textContent = "Bestand 0: Es wurde nichts abgezogen. Bitte sende deine Bestellanfrage über WhatsApp.";
+          wa.textContent = "WhatsApp erneut öffnen";
+          await refreshStock();
+        } else {
+          throw new Error(result === "not_registered" ? "Für diese Größe ist noch kein Bestand im Adminbereich hinterlegt." : "Reservierung konnte nicht abgeschlossen werden.");
+        }
+        var url = "https://wa.me/" + ADMIN_WHATSAPP + "?text=" + encodeURIComponent(msg);
+        if (popup && !popup.closed) popup.location.replace(url);
+        else bookingStatus.textContent += " Falls WhatsApp nicht geöffnet wurde, klicke erneut auf den Button.";
+      } catch (err) {
+        if (popup && !popup.closed) popup.close();
+        bookingStatus.textContent = (err && err.message ? err.message : "Verbindungsfehler") + " Es wurde keine neue Reservierung bestätigt. Bitte erneut versuchen.";
+      } finally { wa.disabled = false; }
+    });
 
     var box = el("textarea", "copybox");
     box.readOnly = true;
