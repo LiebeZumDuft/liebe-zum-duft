@@ -15,6 +15,9 @@
   .order-header{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:28px;flex-wrap:wrap}
   .order-header h4{font-size:1.5rem;margin:0;font-weight:500}.order-header span{font-size:.9rem;color:var(--muted)}
   .order-list{max-height:550px;overflow:auto;margin-top:12px}
+  .product-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:20px}
+  .product-actions .primary,.product-actions .secondary{margin-top:0;letter-spacing:.06em;font-size:.82rem;min-height:54px;padding:12px}
+  @media(max-width:460px){.product-actions{grid-template-columns:1fr}}
   .cart-qty{font-variant-numeric:tabular-nums;color:var(--accent)}
   .cart-line{padding:12px 0;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;gap:12px;align-items:center}
   .cart-line button{border:1px solid var(--line);background:transparent;border-radius:9px;padding:7px 12px;cursor:pointer}
@@ -928,13 +931,13 @@ if ('serviceWorker' in navigator) {
   function itemKey(item) { return item.name; }
   function inventoryCount(item, size) {
     var row = stock[itemKey(item)];
-    return row && Number.isInteger(row[size]) ? row[size] : null;
+    return row && Number.isInteger(row[size]) ? row[size] : 0;
   }
   function stockText(item) {
     if (!stockReady) return "Bestand wird geladen";
     return SIZES.map(function(size) {
       var n = inventoryCount(item, size);
-      return size + " ml: " + (n === null ? "nicht hinterlegt" : n === 0 ? "Bestellbar" : n + " verfügbar");
+      return size + " ml: " + (n === 0 ? "Bestellbar" : n + " verfügbar");
     }).join(" · ");
   }
   function apiHeaders(auth) {
@@ -1202,30 +1205,41 @@ if ('serviceWorker' in navigator) {
     quantityWrap.appendChild(quantityInput);
     form.appendChild(quantityWrap);
 
+    var actions = el("div", "product-actions");
     var go = el("button", "primary", "Zum Warenkorb hinzufügen");
     go.type = "submit";
+    var direct = el("button", "secondary", "Reservieren");
+    direct.type = "button";
     function updateOrderMode() {
       var chosen = Number(form.querySelector('input[name="size"]:checked').value);
       var available = inventoryCount(item, chosen);
       var ordering = available === 0;
-      go.textContent = ordering ? "Bestellung in den Warenkorb" : "In den Warenkorb";
-      stockHint.textContent = available === null ? "Für diese Größe wurde noch kein Bestand erfasst." : ordering ? "Bestellbar · Kein Lagerbestand" : available + " Flakons verfügbar";
-      quantityInput.max = String(ordering ? 20 : available === null ? 1 : Math.min(20, available));
+      go.textContent = "Zum Warenkorb hinzufügen";
+      direct.textContent = ordering ? "Bestellen" : "Reservieren";
+      stockHint.textContent = ordering ? "Bestellbar · aktuell nicht auf Lager" : available + " Flakons verfügbar";
+      quantityInput.max = String(ordering ? 20 : Math.min(20, available));
       if (Number(quantityInput.value) > Number(quantityInput.max)) quantityInput.value = quantityInput.max;
     }
     sizes.addEventListener("change", updateOrderMode);
     updateOrderMode();
-    form.appendChild(go);
+    actions.appendChild(go);
+    actions.appendChild(direct);
+    form.appendChild(actions);
     sheet.appendChild(form);
-    form.addEventListener("submit", function (e) {
-      e.preventDefault();
+    function addSelection(directCheckout) {
       var size = Number(form.querySelector('input[name="size"]:checked').value);
       var quantity = Number(quantityInput.value);
       var available = inventoryCount(item, size);
       var current = cart.find(function(x){return x.name===item.name && x.size===size;});
       var combined = quantity + (current ? current.quantity : 0);
-      if (!Number.isInteger(quantity) || quantity < 1 || combined > 20 || available === null || (available > 0 && combined > available)) {
+      if (!Number.isInteger(quantity) || quantity < 1 || combined > 20 || (available > 0 && combined > available)) {
         stockHint.textContent = "Ungültige Stückzahl oder nicht genügend Bestand (inklusive Warenkorb).";
+        return;
+      }
+      if (directCheckout) {
+        // Direkte Einzelanfrage – bereits vorhandene Warenkorbpositionen bleiben erhalten.
+        closeSheet();
+        openCart([{name:item.name,size:size,quantity:quantity}], true);
         return;
       }
       if (current) current.quantity = combined;
@@ -1233,11 +1247,13 @@ if ('serviceWorker' in navigator) {
       updateCartCount();
       closeSheet();
       openCart();
-    });
+    }
+    form.addEventListener("submit", function (e) { e.preventDefault(); addSelection(false); });
+    direct.addEventListener("click", function () { addSelection(true); });
 
     veil.hidden = false;
     document.body.style.overflow = "hidden";
-    fn.input.focus({ preventScroll: true });
+    quantityInput.focus({ preventScroll: true });
   }
 
   // Ein gemeinsamer Warenkorb, eine Anfrage, eine WhatsApp-Nachricht.
@@ -1246,21 +1262,22 @@ if ('serviceWorker' in navigator) {
     document.getElementById('cart-count').textContent = cart.reduce(function(n,x){return n+x.quantity;},0);
   }
   document.getElementById('nav-cart').addEventListener('click',openCart);
-  function openCart(){
+  function openCart(directItems, isDirect){
+    var checkoutItems = isDirect ? directItems : cart;
     lastFocus=document.getElementById('nav-cart');
     sheet.textContent='';
     var title=el('h3',null,'Dein Warenkorb');title.id='sheet-title';sheet.appendChild(title);
-    if(!cart.length){sheet.appendChild(el('p','note','Dein Warenkorb ist noch leer.'));}
-    cart.forEach(function(line){
+    if(!checkoutItems.length){sheet.appendChild(el('p','note','Dein Warenkorb ist noch leer.'));}
+    checkoutItems.forEach(function(line){
       var row=el('div','cart-line'),left=el('div');
       left.appendChild(el('div',null,line.name));
       left.appendChild(el('div','order-meta',line.quantity+' × '+line.size+' ml · '+(line.quantity*PRICES[line.size])+' €'));
-      var remove=el('button',null,'Entfernen');remove.type='button';
+      var remove=el('button',null,'Entfernen');remove.type='button';remove.hidden=!!isDirect;
       remove.addEventListener('click',function(){cart=cart.filter(function(x){return x!==line;});updateCartCount();openCart();});
       row.appendChild(left);row.appendChild(remove);sheet.appendChild(row);
     });
-    if(cart.length){
-      var total=cart.reduce(function(n,x){return n+x.quantity*PRICES[x.size];},0);
+    if(checkoutItems.length){
+      var total=checkoutItems.reduce(function(n,x){return n+x.quantity*PRICES[x.size];},0);
       sheet.appendChild(el('h3',null,'Gesamtwert: '+total+' €'));
       var form=el('form');
       var fields=el('div','fields');
@@ -1278,7 +1295,7 @@ if ('serviceWorker' in navigator) {
         if(finished){window.open('https://wa.me/'+ADMIN_WHATSAPP+'?text='+encodeURIComponent(message),'_blank','noopener');return;}
         if(!fn.input.value.trim()||!ln.input.value.trim()){status.textContent='Bitte Vor- und Nachnamen eingeben.';return;}
         if(!configured||!requestId){status.textContent='Online-Anfragen sind momentan nicht verfügbar.';return;}
-        var snapshot=cart.map(function(x){return {name:x.name,size:x.size,quantity:x.quantity};});
+        var snapshot=checkoutItems.map(function(x){return {name:x.name,size:x.size,quantity:x.quantity};});
         var first=fn.input.value.trim(),last=ln.input.value.trim(),phone=ph.input.value.trim();
         var popup=window.open('about:blank','_blank');submit.disabled=true;
         status.textContent='Anfrage wird gespeichert …';
@@ -1291,7 +1308,8 @@ if ('serviceWorker' in navigator) {
             return (r.reservation_type==='orderable'?'Bestellung':'Reservierung')+': '+r.quantity+' × '+r.perfume_name+' ('+r.size_ml+' ml) – '+(r.quantity*PRICES[r.size_ml])+' €';
           });
           message='Hallo, ich möchte folgende Düfte anfragen:\n'+lines.join('\n')+'\nGesamtwert: '+total+' €\nName: '+first+' '+last+(phone?'\nTelefon: '+phone:'')+'\nAnfragenummer: '+requestId;
-          finished=true;cart=[];updateCartCount();
+          finished=true;
+          if(!isDirect){cart=[];updateCartCount();}
           lsSet('lzd-first',first);lsSet('lzd-last',last);lsSet('lzd-phone',phone);
           status.textContent='Anfrage gespeichert. Bitte WhatsApp-Nachricht absenden. Zum erneuten Öffnen nochmals klicken.';
           submit.textContent='WhatsApp erneut öffnen';
@@ -1413,7 +1431,11 @@ if ('serviceWorker' in navigator) {
         cancel.disabled=true;
         try{
           var resp=await fetch(API_URL+'/rest/v1/rpc/cancel_perfume_reservation',{method:'POST',headers:apiHeaders(true),body:JSON.stringify({p_request_id:r.request_id})});
-          if(!resp.ok)throw new Error('Storno fehlgeschlagen ('+resp.status+').');
+          var resultText=await resp.text();
+          if(!resp.ok)throw new Error('Storno fehlgeschlagen ('+resp.status+'): '+resultText.slice(0,350));
+          if(resultText.trim() !== 'true') throw new Error('Supabase hat die Stornierung nicht bestätigt: '+resultText);
+          dashboardRows=dashboardRows.filter(function(x){return x.request_id!==r.request_id;});
+          drawDashboard();
           await loadDashboard();await refreshStock();
         }catch(err){alert(err.message);cancel.disabled=false;}
       });
@@ -1436,7 +1458,7 @@ if ('serviceWorker' in navigator) {
         var input = el('input', 'admin-qty');
         input.type = 'number'; input.min = '0'; input.step = '1'; input.inputMode = 'numeric';
         var qty = inventoryCount(item, size);
-        input.value = qty === null ? '' : String(qty);
+        input.value = String(qty);
         input.placeholder = '–';
         lab.appendChild(input); controls.appendChild(lab); inputs[size] = input;
       });
