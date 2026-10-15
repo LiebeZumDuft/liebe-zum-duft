@@ -1,65 +1,34 @@
-const CACHE_NAME = 'lzd-pwa-v3';
-const APP_SHELL = [
-  './',
-  './index.html',
-  './config.js',
-  './hero.jpg',
-  './markenmotiv.jpg',
-  './manifest.webmanifest',
-  './icon-192.png',
-  './icon-512.png',
-  './icon-maskable-512.png',
-  './apple-touch-icon.png'
-];
-
-self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(APP_SHELL))
-  );
+const CACHE_NAME = 'lzd-pwa-sync-v4';
+const SHELL = ['./', './index.html', './hero.jpg', './markenmotiv.jpg', './manifest.webmanifest', './icon-192.png', './icon-512.png', './icon-maskable-512.png', './apple-touch-icon.png'];
+self.addEventListener('install', event => {
+  event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(SHELL)));
   self.skipWaiting();
 });
-
-self.addEventListener('activate', (event) => {
-  event.waitUntil(
-    caches.keys().then((keys) => Promise.all(
-      keys.filter((key) => key !== CACHE_NAME).map((key) => caches.delete(key))
-    ))
-  );
+self.addEventListener('activate', event => {
+  event.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(k=>k!==CACHE_NAME).map(k=>caches.delete(k)))));
   self.clients.claim();
 });
-
-self.addEventListener('fetch', (event) => {
-  const request = event.request;
-  if (request.method !== 'GET') return;
-
-  // Konfiguration immer frisch laden, damit Supabase-Einstellungen nicht veralten.
-  if (new URL(request.url).pathname.endsWith('/config.js')) {
-    event.respondWith(fetch(request).catch(() => caches.match(request)));
+self.addEventListener('fetch', event => {
+  const req=event.request;
+  if(req.method!=='GET') return;
+  const url=new URL(req.url);
+  // Fremde Domains / Supabase niemals cachen, damit alle Geräte Live-Daten sehen.
+  if(url.origin!==self.location.origin) return;
+  // Konfiguration und Navigationsansichten: immer Netzwerk zuerst.
+  if(url.pathname.endsWith('/config.js')) {
+    event.respondWith(fetch(req, {cache:'no-store'}));
     return;
   }
-
-  // Für Navigationen zuerst Netzwerk, sonst Cache-Fallback.
-  if (request.mode === 'navigate') {
-    event.respondWith(
-      fetch(request)
-        .then((response) => {
-          const copy = response.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put('./index.html', copy));
-          return response;
-        })
-        .catch(() => caches.match('./index.html'))
-    );
+  if(req.mode==='navigate') {
+    event.respondWith(fetch(req, {cache:'no-store'}).catch(()=>caches.match('./index.html')));
     return;
   }
-
-  event.respondWith(
-    caches.match(request).then((cached) => {
-      if (cached) return cached;
-      return fetch(request).then((response) => {
-        const copy = response.clone();
-        caches.open(CACHE_NAME).then((cache) => cache.put(request, copy));
-        return response;
-      });
-    })
-  );
+  // Assets: Cache mit Online-Aktualisierung.
+  event.respondWith(caches.match(req).then(cached => {
+    const update=fetch(req).then(res=>{
+      if(res.ok) caches.open(CACHE_NAME).then(c=>c.put(req,res.clone()));
+      return res;
+    });
+    return cached || update;
+  }));
 });

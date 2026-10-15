@@ -993,7 +993,7 @@ if ('serviceWorker' in navigator) {
     return headers;
   }
   async function apiRequest(path, opts) {
-    var res = await fetch(API_URL + path, Object.assign({headers:apiHeaders(false)}, opts || {}));
+    var res = await fetch(API_URL + path, Object.assign({headers:apiHeaders(false),cache:'no-store'}, opts || {}));
     if (!res.ok) {
       var detail = await res.text();
       throw new Error('Serverfehler ' + res.status + ': ' + detail.slice(0, 180));
@@ -1440,7 +1440,7 @@ if ('serviceWorker' in navigator) {
     var status = document.getElementById('dashboard-status');
     status.textContent='Reservierungen werden geladen …';
     try {
-      var res=await fetch(API_URL+'/rest/v1/stock_reservations?select=request_id,perfume_name,size_ml,created_at,price_eur,quantity,paid_at,reservation_type,first_name,last_name,phone,cancelled_at,cart_id&order=created_at.desc&limit=10000',{headers:apiHeaders(true)});
+      var res=await fetch(API_URL+'/rest/v1/stock_reservations?select=request_id,perfume_name,size_ml,created_at,price_eur,quantity,paid_at,reservation_type,first_name,last_name,phone,cancelled_at,cart_id&order=created_at.desc&limit=10000',{headers:apiHeaders(true),cache:'no-store'});
       if (!res.ok) throw new Error('HTTP '+res.status+'. Bitte zuerst ADMIN_DASHBOARD_EINRICHTEN.sql in Supabase ausführen.');
       dashboardRows=await res.json();drawDashboard();
     }catch(err){status.textContent='Dashboard konnte nicht geladen werden: '+err.message;}
@@ -1517,7 +1517,10 @@ if ('serviceWorker' in navigator) {
           var resp=await fetch(API_URL+'/rest/v1/rpc/cancel_perfume_order',{method:'POST',headers:apiHeaders(true),body:JSON.stringify({p_cart_id:g.cartId,p_request_id:g.cartId?null:g.requestId})});
           var raw=await resp.text();var removed;
           try{removed=JSON.parse(raw);}catch(e){removed=raw;}
-          if(!resp.ok)throw new Error('Auftrag konnte nicht entfernt werden (HTTP '+resp.status+'): '+raw.slice(0,450));
+          if(!resp.ok){
+            if(resp.status===404 && raw.includes('PGRST202')) throw new Error('Die Storno-Funktion fehlt noch in Supabase. Bitte UPDATE_AUFTRAEGE_ENTFERNEN.sql ausführen und die API-Schema-Aktualisierung abwarten.');
+            throw new Error('Auftrag konnte nicht entfernt werden (HTTP '+resp.status+'): '+raw.slice(0,450));
+          }
           if(typeof removed!=='number'||removed<1)throw new Error('Kein aktiver Auftrag entfernt. Bitte die SQL-Funktion installieren oder die Ansicht aktualisieren. Antwort: '+raw);
           // Sofort ausblenden und anschließend aus der Datenbank erneut laden.
           dashboardRows=dashboardRows.filter(function(x){return g.cartId?x.cart_id!==g.cartId:x.request_id!==g.requestId;});
@@ -1579,8 +1582,21 @@ if ('serviceWorker' in navigator) {
   render();
   refreshStock();
   // Auch längere geöffnete Kundenseiten regelmäßig aktualisieren.
-  setInterval(function() { if (!document.hidden) refreshStock(); }, 60000);
-  document.addEventListener('visibilitychange', function() { if (!document.hidden) refreshStock(); });
+  // Synchronisierung: zentrale Supabase-Daten statt Browser-Cache.
+  // Bei aktiver Admin-Sitzung auch die Aufträge regelmäßig aktualisieren.
+  var syncBusy = false;
+  async function syncAll() {
+    if (syncBusy || document.hidden || !navigator.onLine) return;
+    syncBusy = true;
+    try {
+      await refreshStock();
+      if (accessToken) await loadDashboard();
+    } finally { syncBusy = false; }
+  }
+  setInterval(syncAll, 20000);
+  document.addEventListener('visibilitychange', function() { if (!document.hidden) syncAll(); });
+  window.addEventListener('focus', syncAll);
+  window.addEventListener('online', syncAll);
 })();
 </script>
 
