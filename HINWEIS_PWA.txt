@@ -1,0 +1,17 @@
+Liebe zum Duft – App-Modus / Homescreen-Update
+
+Diese Dateien bitte ins GitHub-Repository hochladen:
+- index.html
+- manifest.webmanifest
+- sw.js
+- icon-192.png
+- icon-512.png
+- icon-maskable-512.png
+- apple-touch-icon.png
+
+WICHTIG:
+- Die bestehende config.js NICHT überschreiben.
+- Nach dem Upload GitHub Pages 1–2 Minuten Zeit geben.
+- Danach die Seite im Handy-Browser einmal neu öffnen.
+- Anschließend „Zum Home-Bildschirm“ / „Add to Home Screen“ wählen.
+- Falls die Seite schon vorher als Homescreen-App gespeichert war: alte Homescreen-App löschen und neu hinzufügen.
