@@ -27,7 +27,10 @@
   * { box-sizing: border-box; }
   html { scroll-behavior: smooth; }
   body {
-    background: var(--bg);
+    background:
+      radial-gradient(circle at top left, rgba(169, 195, 238, 0.12), transparent 30%),
+      radial-gradient(circle at top right, rgba(255, 215, 180, 0.08), transparent 26%),
+      linear-gradient(180deg, #05070c 0%, #020203 32%, #020203 100%);
     color: var(--fg);
     font-family: var(--font-display);
     font-size: 19px;
@@ -49,42 +52,55 @@
 
   /* Kopfzeile */
   .top {
+    position: sticky;
+    top: 0;
+    z-index: 10;
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 16px;
-    padding-block: 16px 6px;
+    margin-top: 10px;
+    padding: 16px 18px 12px;
+    background: rgba(6, 8, 12, 0.72);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 18px;
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
   }
   .brand {
     font-family: var(--font-script);
-    font-size: 2rem;
+    font-size: 2.15rem;
     line-height: 1;
     text-decoration: none;
     background: none;
     border: 0;
     padding: 0;
     cursor: pointer;
+    color: #fff;
+    text-shadow: 0 10px 30px rgba(0,0,0,0.4);
   }
-  .nav { display: flex; gap: 22px; }
+  .nav { display: flex; gap: 10px; flex-wrap: wrap; justify-content: flex-end; }
   .nav button {
-    background: none;
-    border: 0;
-    border-bottom: 1px solid transparent;
-    padding: 8px 0;
-    font-size: 0.82rem;
-    font-weight: 600;
-    letter-spacing: 0.22em;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.06);
+    padding: 9px 14px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.18em;
     text-transform: uppercase;
     color: var(--muted);
     cursor: pointer;
+    border-radius: 999px;
+    transition: .2s ease;
   }
-  .nav button:hover { color: var(--fg); }
-  .nav button[aria-current="page"] { color: var(--fg); border-bottom-color: var(--accent); }
+  .nav button:hover { color: var(--fg); border-color: rgba(169,195,238,.4); transform: translateY(-1px); }
+  .nav button[aria-current="page"] { color: var(--accent-ink); border-color: var(--accent); background: var(--accent); }
 
   /* Startseite: Bild */
   .hero-art {
     width: min(100%, 640px);
-    margin: 0 auto;
+    margin: 18px auto 0;
+    filter: drop-shadow(0 28px 60px rgba(0,0,0,0.55));
     -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 5%, #000 91%, transparent 100%);
     mask-image: linear-gradient(to bottom, transparent 0, #000 5%, #000 91%, transparent 100%);
   }
@@ -104,30 +120,50 @@
 
   /* Ruhiger Markenabschluss: bewusst schmaler als das Titelmotiv. */
   .brand-editorial {
-    width: min(100% - 48px, 440px);
-    margin: 68px auto 56px;
+    width: min(100%, 430px);
+    margin: 0;
     overflow: hidden;
-    border-radius: 7px;
+    border-radius: 24px;
+    border: 1px solid rgba(255,255,255,.08);
+    box-shadow: 0 24px 70px rgba(0,0,0,.42);
   }
   .brand-editorial img { display: block; width: 100%; height: auto; }
   @media (max-width: 480px) {
-    .brand-editorial { width: min(100% - 40px, 380px); margin: 56px auto 44px; }
+    .brand-editorial { width: min(100%, 380px); }
   }
 
-  .intro { text-align: center; margin-top: -28px; }
+  .intro {
+    text-align: center;
+    margin-top: -20px;
+    padding: 30px 26px 34px;
+    background: linear-gradient(180deg, rgba(11, 14, 21, 0.94), rgba(8, 10, 15, 0.88));
+    border: 1px solid rgba(255,255,255,.06);
+    border-radius: 30px;
+    box-shadow: 0 22px 60px rgba(0,0,0,.25);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+  }
+  .eyebrow {
+    margin: 0 0 10px;
+    font-size: .78rem;
+    font-weight: 700;
+    letter-spacing: .24em;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
   .tagline {
     font-style: italic;
     font-weight: 400;
-    font-size: clamp(2rem, 7.4vw, 2.9rem);
+    font-size: clamp(2.2rem, 7.8vw, 3.3rem);
     line-height: 1.15;
     margin: 0 auto;
     max-width: 18ch;
     text-wrap: balance;
   }
   .intro p.body {
-    font-size: 1.28rem;
-    line-height: 1.5;
-    margin: 22px auto 0;
+    font-size: 1.2rem;
+    line-height: 1.62;
+    margin: 20px auto 0;
     max-width: 34em;
     color: var(--fg);
     text-wrap: pretty;
@@ -135,10 +171,11 @@
   .intro p.body em { color: var(--accent); font-style: italic; }
 
   .oil {
-    margin: 44px auto 0;
-    padding: 28px 0;
-    border-top: 1px solid var(--line);
-    border-bottom: 1px solid var(--line);
+    margin: 34px auto 0;
+    padding: 22px 24px;
+    border: 1px solid rgba(255,255,255,.06);
+    border-radius: 22px;
+    background: rgba(255,255,255,.03);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -157,11 +194,11 @@
 
   .prices-title {
     font-size: 0.82rem;
-    font-weight: 600;
+    font-weight: 700;
     letter-spacing: 0.24em;
     text-transform: uppercase;
     color: var(--muted);
-    margin: 40px 0 14px;
+    margin: 42px 0 14px;
   }
   .prices {
     list-style: none;
@@ -172,17 +209,18 @@
     gap: 10px;
   }
   .prices li {
-    border: 1px solid var(--line);
-    border-radius: 16px;
-    padding: 16px 6px 14px;
-    background: var(--surface);
+    border: 1px solid rgba(255,255,255,.06);
+    border-radius: 20px;
+    padding: 18px 10px 16px;
+    background: linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.03);
   }
   .prices .ml { display: block; font-size: 1.05rem; color: var(--muted); }
   .prices .eur { display: block; font-size: 1.9rem; font-weight: 600; line-height: 1.2; font-variant-numeric: lining-nums; }
 
   .cta {
     display: inline-block;
-    margin-top: 36px;
+    margin-top: 0;
     padding: 16px 34px;
     background: var(--fg);
     color: #0a0a0c;
@@ -195,6 +233,125 @@
     cursor: pointer;
   }
   .cta:hover { background: var(--accent); }
+
+  .cta-row {
+    display: flex;
+    gap: 14px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-top: 34px;
+  }
+  .cta-inline {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 220px;
+    padding: 15px 28px;
+    border-radius: 999px;
+    border: 1px solid rgba(255,255,255,.12);
+    text-decoration: none;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    font-size: .82rem;
+    font-weight: 700;
+    color: var(--fg);
+    background: rgba(255,255,255,.03);
+  }
+  .cta-inline:hover { border-color: var(--accent); color: var(--accent); }
+  .price-note {
+    margin: 14px auto 0;
+    color: var(--muted);
+    font-size: 1rem;
+    max-width: 36ch;
+  }
+  .feature-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0,1fr));
+    gap: 12px;
+    margin-top: 24px;
+  }
+  .feature {
+    text-align: left;
+    background: rgba(255,255,255,.03);
+    border: 1px solid rgba(255,255,255,.06);
+    border-radius: 20px;
+    padding: 18px 18px 16px;
+  }
+  .feature b {
+    display: block;
+    margin-bottom: 6px;
+    font-size: .82rem;
+    letter-spacing: .18em;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+  .feature p {
+    margin: 0;
+    font-size: 1.02rem;
+    line-height: 1.45;
+    color: var(--fg);
+  }
+  .contact-panel {
+    margin-top: 24px;
+    padding: 18px 20px;
+    border-radius: 22px;
+    background: linear-gradient(180deg, rgba(169, 195, 238, 0.12), rgba(255,255,255,.03));
+    border: 1px solid rgba(169,195,238,.22);
+  }
+  .contact-panel .kicker,
+  .brand-copy .kicker {
+    display: block;
+    margin-bottom: 10px;
+    font-size: .78rem;
+    font-weight: 700;
+    letter-spacing: .22em;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+  .contact-panel p { margin: 0; }
+  .contact-panel .number {
+    display: inline-block;
+    margin-top: 8px;
+    font-size: 1.2rem;
+    font-weight: 600;
+    letter-spacing: .04em;
+    text-decoration: none;
+  }
+
+  .brand-story {
+    display: grid;
+    grid-template-columns: 1.05fr .95fr;
+    gap: 28px;
+    align-items: center;
+    margin-top: 34px;
+    margin-bottom: 24px;
+    padding: 0 0 8px;
+  }
+  .brand-copy {
+    text-align: left;
+    padding: 30px;
+    border-radius: 28px;
+    background: linear-gradient(180deg, rgba(11, 14, 21, 0.92), rgba(8, 10, 15, 0.88));
+    border: 1px solid rgba(255,255,255,.06);
+  }
+  .brand-copy h2 {
+    margin: 0 0 12px;
+    font-size: clamp(2rem, 6vw, 2.8rem);
+  }
+  .brand-copy p {
+    margin: 0 0 14px;
+    color: #d6d9df;
+    font-size: 1.08rem;
+    line-height: 1.65;
+  }
+  .brand-quote {
+    margin-top: 18px;
+    font-family: var(--font-script);
+    font-size: 2.1rem;
+    line-height: 1.05;
+    color: #fff;
+  }
+  .view-spacing { padding-bottom: 8px; }
 
   /* Düfte-Ansicht */
   .back {
@@ -261,9 +418,9 @@
     font-size: 1.7rem;
     font-weight: 500;
     color: var(--accent);
-    margin: 26px 0 2px;
-    padding-bottom: 4px;
-    border-bottom: 1px solid var(--line);
+    margin: 30px 0 8px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid rgba(255,255,255,.08);
   }
   .list { list-style: none; margin: 0; padding: 0; }
   .row {
@@ -273,14 +430,16 @@
     gap: 16px;
     width: 100%;
     text-align: left;
-    background: none;
-    border: 0;
-    border-bottom: 1px solid var(--line);
-    padding: 12px 4px;
+    background: linear-gradient(180deg, rgba(255,255,255,.025), rgba(255,255,255,.01));
+    border: 1px solid rgba(255,255,255,.06);
+    border-radius: 18px;
+    padding: 14px 16px;
     cursor: pointer;
-    min-height: 58px;
+    min-height: 70px;
+    margin-top: 10px;
+    transition: .18s ease;
   }
-  .row:hover { background: var(--surface); }
+  .row:hover { background: var(--surface); border-color: rgba(169,195,238,.3); transform: translateY(-1px); }
   .row .names { min-width: 0; display: flex; flex-direction: column; }
   .row .brand-line {
     font-size: 0.72rem;
@@ -307,8 +466,8 @@
 
   footer {
     margin-top: 64px;
-    padding-block: 28px 48px;
-    border-top: 1px solid var(--line);
+    padding-block: 30px 48px;
+    border-top: 1px solid rgba(255,255,255,.08);
     color: var(--muted);
     font-size: 1rem;
     text-align: center;
@@ -469,6 +628,24 @@
   .admin-controls input { display:block; margin-top:5px; }
   .admin-controls button { background:var(--fg); color:#111; border:0; border-radius:10px; padding:13px 16px; cursor:pointer; }
   .admin-item .feedback { margin-top:5px; font-size:.86rem; color:var(--accent); }
+  @media (max-width: 760px) {
+    .brand-story,
+    .feature-grid { grid-template-columns: 1fr; }
+    .brand-story { gap: 18px; }
+    .brand-copy { padding: 24px 22px; }
+    .prices { grid-template-columns: 1fr; }
+    .top { padding-inline: 14px; }
+  }
+  @media (max-width: 560px) {
+    .wrap { padding-left: max(14px, env(safe-area-inset-left, 0px)); padding-right: max(14px, env(safe-area-inset-right, 0px)); }
+    .top { align-items: flex-start; }
+    .nav { gap: 8px; }
+    .nav button { font-size: .7rem; padding: 8px 10px; }
+    .intro { padding: 26px 18px 28px; border-radius: 24px; }
+    .oil { flex-direction: column; text-align: center; }
+    .oil .txt { text-align: center; }
+    .contact-panel .number { font-size: 1.06rem; }
+  }
   @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
 </style>
 
@@ -489,16 +666,17 @@
       <img src="hero.jpg" width="1024" height="1536" alt="Ein Liebe zum Duft Parfümflakon in einer Hand vor dunklem Hintergrund.">
     </div>
 
-    <div class="wrap intro">
+    <div class="wrap intro view-spacing">
+      <p class="eyebrow">Exklusive Duftauswahl · Reservierung per WhatsApp</p>
       <p class="tagline">Finde den Duft, der zu dir gehört.</p>
       <p class="body">
         Jeder Duft in meiner Sammlung hat <em>40 % Ölanteil</em>. Das gibt ihm Tiefe, kräftige Intensität und einen langen Halt auf der Haut.
-        Von frisch bis Oud, von Vanille bis Musk: Aus <span id="total">vielen</span> Düften suchst du dir deinen aus, wählst die Größe und reservierst ihn bei mir.
+        Von frisch bis Oud, von Vanille bis Musk: Aus <span id="total">vielen</span> Düften suchst du dir deinen aus, wählst die Größe und reservierst ihn ganz unkompliziert.
       </p>
 
       <div class="oil">
         <div class="big">40&nbsp;%</div>
-        <div class="txt"><b>Ölanteil</b>in jedem Duft, für Intensität und langen Halt</div>
+        <div class="txt"><b>Ölanteil</b>in jedem Duft, für Intensität, langen Halt und ein hochwertiges Dufterlebnis</div>
       </div>
 
       <p class="prices-title">Unsere Preise</p>
@@ -507,12 +685,47 @@
         <li><span class="ml">50 ml</span><span class="eur">35 €</span></li>
         <li><span class="ml">100 ml</span><span class="eur">45 €</span></li>
       </ul>
+      <p class="price-note">Bei jedem Duft wird dir direkt der aktuelle Bestand angezeigt. Ist der Bestand 0, erscheint automatisch „Bestellbar“.</p>
 
-      <button type="button" class="cta" id="cta">Meine Düfte ansehen</button>
+      <div class="feature-grid" aria-label="Vorteile">
+        <article class="feature">
+          <b>Große Auswahl</b>
+          <p>Viele beliebte Düfte von frisch und clean bis warm, süß und intensiv.</p>
+        </article>
+        <article class="feature">
+          <b>Live-Bestand</b>
+          <p>Du siehst direkt, was aktuell verfügbar ist und was für dich bestellt werden kann.</p>
+        </article>
+        <article class="feature">
+          <b>Einfach reservieren</b>
+          <p>Wunschduft auswählen, Größe festlegen und deine Reservierung per WhatsApp senden.</p>
+        </article>
+      </div>
+
+      <div class="cta-row">
+        <button type="button" class="cta" id="cta">Meine Düfte ansehen</button>
+        <a class="cta-inline" href="https://wa.me/4917670499636" target="_blank" rel="noopener">WhatsApp öffnen</a>
+      </div>
+
+      <div class="contact-panel">
+        <span class="kicker">Reservierung & Beratung</span>
+        <p>Deine Anfrage geht direkt an mich. So kann ich Verfügbarkeit, Rückfragen und Reservierungen schnell bestätigen.</p>
+        <a class="number" href="https://wa.me/4917670499636" target="_blank" rel="noopener">+49 176 70499636</a>
+      </div>
     </div>
-    <figure class="brand-editorial">
-      <img src="markenmotiv.jpg" width="1024" height="1536" loading="lazy" decoding="async" alt="Liebe zum Duft – drei elegante Parfümflakons mit dem Schriftzug Fühl den Duft. Lebe die Liebe.">
-    </figure>
+
+    <section class="wrap brand-story" aria-label="Markenbereich">
+      <div class="brand-copy">
+        <span class="kicker">Liebe zum Duft</span>
+        <h2>Modern. Elegant. Persönlich.</h2>
+        <p>„Liebe zum Duft“ steht für eine stilvolle Auswahl an Düften mit hochwertiger Wirkung, klarer Präsentation und unkomplizierter Reservierung.</p>
+        <p>So bleibt die Seite übersichtlich, wirkt hochwertig und zeigt deinen Kundinnen und Kunden sofort, wofür deine Marke steht.</p>
+        <div class="brand-quote">Fühl den Duft. Lebe die Liebe.</div>
+      </div>
+      <figure class="brand-editorial">
+        <img src="markenmotiv.jpg" width="1024" height="1536" loading="lazy" decoding="async" alt="Liebe zum Duft – drei elegante Parfümflakons mit dem Schriftzug Fühl den Duft. Lebe die Liebe.">
+      </figure>
+    </section>
   </section>
 
   <!-- Düfte -->
