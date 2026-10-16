@@ -1,0 +1,31 @@
+{
+  "name": "Liebe zum Duft",
+  "short_name": "Liebe zum Duft",
+  "description": "Liebe zum Duft – Düfte und Ölroller bestellen und reservieren",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#090807",
+  "theme_color": "#090807",
+  "lang": "de-DE",
+  "icons": [
+    {
+      "src": "./app-icon-lzd-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./app-icon-lzd-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./app-icon-lzd-maskable.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

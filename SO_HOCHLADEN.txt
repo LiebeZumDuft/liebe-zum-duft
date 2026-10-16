@@ -1,0 +1,7 @@
+Liebe zum Duft – transparentes Logo
+
+Alle Dateien aus diesem Ordner auf GitHub ins Stammverzeichnis hochladen (Add file > Upload files).
+Vorhandene index.html ersetzen.
+config.js, sw.js, Datenbank und bestehende Bestände NICHT ändern.
+Browser: Strg + F5 und ggf. Website-Tab neu öffnen.
+Installierte Homescreen-App: bestehendes Icon ggf. löschen und neu installieren, damit das Icon aktualisiert wird.
