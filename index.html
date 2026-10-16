@@ -186,8 +186,8 @@
   }
   .brand-copy p { color: #ddd4c8; }
   .brand-editorial { width: min(100%, 390px); border-radius: 34px; }
-  #view-duefte { max-width: 980px; padding-top: 22px; }
-  #view-duefte .section-head, #view-duefte .search-bar, #view-duefte .chips, #view-duefte #list {
+  #view-duefte, #view-oelroller { max-width: 980px; padding-top: 22px; }
+  #view-duefte .section-head, #view-duefte .search-bar, #view-duefte .chips, #view-duefte #list, #view-oelroller .section-head, #view-oelroller .search-bar, #view-oelroller .chips, #view-oelroller #oel-list {
     max-width: 900px;
     margin-inline: auto;
   }
@@ -368,9 +368,6 @@
     -webkit-backdrop-filter: blur(14px);
   }
   .brand {
-    font-family: var(--font-script);
-    font-size: 2.15rem;
-    line-height: 1;
     text-decoration: none;
     background: none;
     border: 0;
@@ -378,6 +375,12 @@
     cursor: pointer;
     color: var(--fg);
     text-shadow: 0 10px 30px rgba(0,0,0,0.32);
+  }
+  .brand img {
+    display: block;
+    height: clamp(56px, 7vw, 84px);
+    width: auto;
+    filter: drop-shadow(0 10px 30px rgba(0,0,0,.32));
   }
   .nav { display: flex; gap: 10px; flex-wrap: wrap; justify-content: flex-end; }
   .nav button {
@@ -1001,10 +1004,11 @@
 </style>
 
 <header class="wrap top">
-  <button type="button" class="brand" id="brand" aria-label="Liebe zum Duft, zur Startseite">Liebe zum Duft</button>
+  <button type="button" class="brand" id="brand" aria-label="Liebe zum Duft, zur Startseite"><img src="icon-192.png" alt="Liebe zum Duft"></button>
   <nav class="nav" aria-label="Hauptmenü">
     <button type="button" id="nav-start" aria-current="page">Start</button>
     <button type="button" id="nav-duefte">Meine Düfte</button>
+    <button type="button" id="nav-oelroller">Meine Ölroller</button>
     <button type="button" id="nav-cart">Warenkorb <span id="cart-count">0</span></button>
     <button type="button" id="nav-admin">Admin</button>
   </nav>
@@ -1024,6 +1028,7 @@
       <p class="body">
         Jeder Duft in meiner Sammlung hat <em>40 % Ölanteil</em>. Das gibt ihm Tiefe, kräftige Intensität und einen langen Halt auf der Haut.
         Von frisch bis Oud, von Vanille bis Musk: Aus <span id="total">vielen</span> Düften suchst du dir deinen aus, wählst die Größe und reservierst ihn ganz unkompliziert.
+        Zusätzlich findest du jetzt dieselben Düfte auch als <strong>Ölroller</strong> in 3&nbsp;ml und 8&nbsp;ml.
       </p>
 
       <div class="oil">
@@ -1033,11 +1038,14 @@
 
       <p class="prices-title">Unsere Preise</p>
       <ul class="prices">
-        <li><span class="ml">30 ml</span><span class="eur">25 €</span></li>
-        <li><span class="ml">50 ml</span><span class="eur">35 €</span></li>
-        <li><span class="ml">100 ml</span><span class="eur">45 €</span></li>
+        <li><span class="ml">30 ml Duft</span><span class="eur">25 €</span></li>
+        <li><span class="ml">50 ml Duft</span><span class="eur">35 €</span></li>
+        <li><span class="ml">100 ml Duft</span><span class="eur">45 €</span></li>
+        <li><span class="ml">3 ml Ölroller</span><span class="eur">6 €</span></li>
+        <li><span class="ml">8 ml Ölroller</span><span class="eur">9 €</span></li>
       </ul>
       <p class="price-note">Bei jedem Duft wird dir direkt der aktuelle Bestand angezeigt. Ist der Bestand 0, erscheint automatisch „Bestellbar“.</p>
+      <p class="price-note">Bei bestellten Düften berechnen wir 5 € Versandkosten. Ab zwei bestellten Düften ist der Versand kostenfrei.</p>
 
       <div class="feature-grid" aria-label="Vorteile">
         <article class="feature">
@@ -1056,6 +1064,7 @@
 
       <div class="cta-row">
         <button type="button" class="cta" id="cta">Meine Düfte ansehen</button>
+        <button type="button" class="cta" id="cta-oelroller">Meine Ölroller ansehen</button>
         <a class="cta-inline" href="https://wa.me/4917670499636" target="_blank" rel="noopener">WhatsApp öffnen</a>
       </div>
 
@@ -1097,6 +1106,26 @@
       <button class="brand-scroll-arrow" id="brand-scroll-right" type="button" aria-label="Marken nach rechts scrollen">&#8250;</button>
     </div>
     <div id="list"></div>
+  </section>
+
+  <section id="view-oelroller" class="wrap" aria-labelledby="oel-title" hidden>
+    <button type="button" class="back" id="back-oel">← Zur Startseite</button>
+    <div class="section-head">
+      <h2 id="oel-title">Meine Ölroller</h2>
+      <p class="count" id="oel-count" aria-live="polite"></p>
+    </div>
+    <div class="search-bar">
+      <label class="lbl sr-only" for="oel-q">Ölroller suchen</label>
+      <input id="oel-q" class="search" type="search" placeholder="Ölroller oder Marke suchen" autocomplete="off" enterkeyhint="search">
+    </div>
+    <p class="price-note">Alle Düfte gibt es auch als Ölroller – 3 ml für 6 € und 8 ml für 9 €.</p>
+    <p class="price-note">Ölroller sind direkt bestellbar. Bei bestellten Düften berechnen wir 5 € Versandkosten. Ab zwei bestellten Düften ist der Versand kostenfrei.</p>
+    <div class="brand-filter-wrap" aria-label="Markenfilter für Ölroller">
+      <button class="brand-scroll-arrow" id="oel-brand-scroll-left" type="button" aria-label="Marken nach links scrollen">&#8249;</button>
+      <div class="chips" id="oel-chips" role="group" aria-label="Ölroller nach Marke filtern" tabindex="0"></div>
+      <button class="brand-scroll-arrow" id="oel-brand-scroll-right" type="button" aria-label="Marken nach rechts scrollen">&#8250;</button>
+    </div>
+    <div id="oel-list"></div>
   </section>
   <section id="view-admin" class="wrap admin-page" hidden aria-labelledby="admin-title">
     <h2 id="admin-title">Bestand verwalten</h2>
@@ -1180,6 +1209,11 @@ if ('serviceWorker' in navigator) {
   // Nummer für die Reservierungs-Nachricht (international, ohne + und ohne Leerzeichen).
   var ADMIN_WHATSAPP = "4917670499636";
   var PRICES = { 30: 25, 50: 35, 100: 45 };
+  var OIL_PRICES = { 3: 6, 8: 9 };
+  var CATALOGS = {
+    duefte: { key: "duefte", title: "Meine Düfte", noun: "Düfte", sizes: [30, 50, 100], prices: PRICES },
+    oelroller: { key: "oelroller", title: "Meine Ölroller", noun: "Ölroller", sizes: [3, 8], prices: OIL_PRICES }
+  };
 
   var RAW = [
     "Louis Vuitton California Dream","Louis Vuitton Orage","Louis Vuitton L'Immensité","Louis Vuitton On the Beach","Louis Vuitton Myriad","Louis Vuitton Fleur du Desert","Tom Ford Cherry Smoke","GPG Fleur du Mal","GPG Divine","JPG Le Belle Paradiese Garden W","JPG Scandal Absolutly","Parfums de Marly Herod","De Marly Oriana","PDM Pegasus","YSL La Nuit de l'homme","Armani Code Absolue (m)","Xerjoff Coro","Xerjoff 40 Knots","Xerjoff Ouverture","Xerjoff La Capitale",
@@ -1252,13 +1286,27 @@ if ('serviceWorker' in navigator) {
   var stockReady = false;
   var accessToken = "";
   function itemKey(item) { return item.name; }
-  function inventoryCount(item, size) {
-    var row = stock[itemKey(item)];
+  function inventoryCountByName(name, size) {
+    var row = stock[name];
     return row && Number.isInteger(row[size]) ? row[size] : 0;
   }
-  function stockText(item) {
-    if (!stockReady) return "Bestand wird geladen";
-    return SIZES.map(function(size) {
+  function inventoryCount(item, size) {
+    return inventoryCountByName(itemKey(item), size);
+  }
+  function getCatalog(key) {
+    return CATALOGS[key] || CATALOGS.duefte;
+  }
+  function priceFor(catalogKey, size) {
+    var catalog = getCatalog(catalogKey);
+    return Number(catalog.prices[size]) || 0;
+  }
+  function productLabel(catalogKey) {
+    return catalogKey === "oelroller" ? "Ölroller" : "Duft";
+  }
+  function stockText(item, catalogKey) {
+    var catalog = getCatalog(catalogKey);
+    if (!stockReady && catalogKey === "duefte") return "Bestand wird geladen";
+    return catalog.sizes.map(function(size) {
       var n = inventoryCount(item, size);
       return size + " ml: " + (n === 0 ? "Bestellbar" : n + " verfügbar");
     }).join(" · ");
@@ -1301,92 +1349,100 @@ if ('serviceWorker' in navigator) {
   // ---- Ansichten ----
   var viewStart = document.getElementById("view-start");
   var viewList = document.getElementById("view-duefte");
+  var viewOel = document.getElementById("view-oelroller");
   var navStart = document.getElementById("nav-start");
   var navList = document.getElementById("nav-duefte");
+  var navOel = document.getElementById("nav-oelroller");
 
   function show(view) {
     var list = view === "duefte";
+    var oils = view === "oelroller";
     var admin = view === "admin";
-    viewStart.hidden = list || admin;
+    viewStart.hidden = list || oils || admin;
     viewList.hidden = !list;
+    viewOel.hidden = !oils;
     document.getElementById("view-admin").hidden = !admin;
-    navList.removeAttribute("aria-current"); navStart.removeAttribute("aria-current");
-    document.getElementById("nav-admin").removeAttribute("aria-current");
-    (admin ? document.getElementById("nav-admin") : list ? navList : navStart).setAttribute("aria-current", "page");
+    [navStart, navList, navOel, document.getElementById("nav-admin")].forEach(function (btn) { btn.removeAttribute("aria-current"); });
+    (admin ? document.getElementById("nav-admin") : oils ? navOel : list ? navList : navStart).setAttribute("aria-current", "page");
     window.scrollTo(0, 0);
-    try { history.replaceState(null, "", "#" + (admin ? "admin" : list ? "duefte" : "start")); } catch (e) {}
+    try { history.replaceState(null, "", "#" + (admin ? "admin" : oils ? "oelroller" : list ? "duefte" : "start")); } catch (e) {}
   }
   document.getElementById("brand").addEventListener("click", function () { show("start"); });
   navStart.addEventListener("click", function () { show("start"); });
   navList.addEventListener("click", function () { show("duefte"); });
+  navOel.addEventListener("click", function () { show("oelroller"); });
   document.getElementById("cta").addEventListener("click", function () { show("duefte"); });
+  document.getElementById("cta-oelroller").addEventListener("click", function () { show("oelroller"); });
   document.getElementById("back").addEventListener("click", function () { show("start"); });
+  document.getElementById("back-oel").addEventListener("click", function () { show("start"); });
   document.getElementById("nav-admin").addEventListener("click", function () {
     document.getElementById("admin-username").value = "";
     document.getElementById("admin-password").value = "";
     show("admin");
   });
   if (location.hash === "#duefte") show("duefte");
+  if (location.hash === "#oelroller") show("oelroller");
   if (location.hash === "#admin") show("admin");
 
-  // ---- Liste ----
+  // ---- Listen ----
   var brandCount = {};
   ITEMS.forEach(function (i) { if (i.brand) brandCount[i.brand] = (brandCount[i.brand] || 0) + 1; });
-  var chipBrands = Object.keys(brandCount).filter(function (b) { return brandCount[b] >= 4; })
-    .sort(function (a, b) { return brandCount[b] - brandCount[a] || collator.compare(a, b); });
+  var chipBrands = Object.keys(brandCount).filter(function (b) { return brandCount[b] >= 4; }).sort(function (a, b) { return brandCount[b] - brandCount[a] || collator.compare(a, b); });
 
-  var state = { q: "", brand: "" };
-  var chipsEl = document.getElementById("chips");
-  var brandScrollLeft = document.getElementById("brand-scroll-left");
-  var brandScrollRight = document.getElementById("brand-scroll-right");
-  function updateBrandScrollButtons() {
-    var maxScroll = Math.max(0, chipsEl.scrollWidth - chipsEl.clientWidth);
-    brandScrollLeft.disabled = chipsEl.scrollLeft <= 2;
-    brandScrollRight.disabled = chipsEl.scrollLeft >= maxScroll - 2;
+  var catalogViews = {
+    duefte: { key: "duefte", state: { q: "", brand: "" }, chipsEl: document.getElementById("chips"), brandScrollLeft: document.getElementById("brand-scroll-left"), brandScrollRight: document.getElementById("brand-scroll-right"), listEl: document.getElementById("list"), countEl: document.getElementById("count"), qEl: document.getElementById("q") },
+    oelroller: { key: "oelroller", state: { q: "", brand: "" }, chipsEl: document.getElementById("oel-chips"), brandScrollLeft: document.getElementById("oel-brand-scroll-left"), brandScrollRight: document.getElementById("oel-brand-scroll-right"), listEl: document.getElementById("oel-list"), countEl: document.getElementById("oel-count"), qEl: document.getElementById("oel-q") }
+  };
+
+  function updateBrandScrollButtons(viewCfg) {
+    var maxScroll = Math.max(0, viewCfg.chipsEl.scrollWidth - viewCfg.chipsEl.clientWidth);
+    viewCfg.brandScrollLeft.disabled = viewCfg.chipsEl.scrollLeft <= 2;
+    viewCfg.brandScrollRight.disabled = viewCfg.chipsEl.scrollLeft >= maxScroll - 2;
   }
-  brandScrollLeft.addEventListener("click", function () { chipsEl.scrollBy({left:-Math.max(240,chipsEl.clientWidth*.75),behavior:"smooth"}); });
-  brandScrollRight.addEventListener("click", function () { chipsEl.scrollBy({left:Math.max(240,chipsEl.clientWidth*.75),behavior:"smooth"}); });
-  chipsEl.addEventListener("scroll", updateBrandScrollButtons, {passive:true});
-  window.addEventListener("resize", updateBrandScrollButtons);
-  var listEl = document.getElementById("list");
-  var countEl = document.getElementById("count");
-  var qEl = document.getElementById("q");
-
-  function makeChip(label, value) {
+  function makeChip(label, value, viewCfg) {
     var b = document.createElement("button");
     b.type = "button";
     b.className = "chip";
     b.textContent = label;
     b.dataset.value = value;
-    b.setAttribute("aria-pressed", value === state.brand ? "true" : "false");
+    b.setAttribute("aria-pressed", value === viewCfg.state.brand ? "true" : "false");
     b.addEventListener("click", function () {
-      state.brand = value;
-      Array.prototype.forEach.call(chipsEl.children, function (c) {
-        c.setAttribute("aria-pressed", c.dataset.value === state.brand ? "true" : "false");
-      });
-      render();
+      viewCfg.state.brand = value;
+      Array.prototype.forEach.call(viewCfg.chipsEl.children, function (c) { c.setAttribute("aria-pressed", c.dataset.value === viewCfg.state.brand ? "true" : "false"); });
+      renderCatalog(viewCfg.key);
     });
     return b;
   }
-  chipsEl.appendChild(makeChip("Alle", ""));
-  chipBrands.forEach(function (b) { chipsEl.appendChild(makeChip(b + " · " + brandCount[b], b)); });
-  requestAnimationFrame(updateBrandScrollButtons);
+  Object.keys(catalogViews).forEach(function (key) {
+    var viewCfg = catalogViews[key];
+    viewCfg.brandScrollLeft.addEventListener("click", function () { viewCfg.chipsEl.scrollBy({left:-Math.max(240,viewCfg.chipsEl.clientWidth*.75),behavior:"smooth"}); });
+    viewCfg.brandScrollRight.addEventListener("click", function () { viewCfg.chipsEl.scrollBy({left:Math.max(240,viewCfg.chipsEl.clientWidth*.75),behavior:"smooth"}); });
+    viewCfg.chipsEl.addEventListener("scroll", function () { updateBrandScrollButtons(viewCfg); }, {passive:true});
+    viewCfg.qEl.addEventListener("input", function () {
+      clearTimeout(viewCfg.timer);
+      viewCfg.timer = setTimeout(function () { viewCfg.state.q = viewCfg.qEl.value; renderCatalog(viewCfg.key); }, 80);
+    });
+    viewCfg.chipsEl.appendChild(makeChip("Alle", "", viewCfg));
+    chipBrands.forEach(function (brand) { viewCfg.chipsEl.appendChild(makeChip(brand + " · " + brandCount[brand], brand, viewCfg)); });
+    requestAnimationFrame(function () { updateBrandScrollButtons(viewCfg); });
+  });
+  window.addEventListener("resize", function () { Object.keys(catalogViews).forEach(function (key) { updateBrandScrollButtons(catalogViews[key]); }); });
 
-  function render() {
-    var q = norm(state.q.trim());
+  function renderCatalog(key) {
+    var catalog = getCatalog(key);
+    var viewCfg = catalogViews[key];
+    var q = norm(viewCfg.state.q.trim());
     var shown = ITEMS.filter(function (i) {
-      if (state.brand && i.brand !== state.brand) return false;
+      if (viewCfg.state.brand && i.brand !== viewCfg.state.brand) return false;
       return !q || norm(i.name).indexOf(q) !== -1;
     });
-    countEl.textContent = shown.length === ITEMS.length
-      ? ITEMS.length + " Düfte von A bis Z"
-      : shown.length + " von " + ITEMS.length + " Düften";
-    listEl.textContent = "";
+    viewCfg.countEl.textContent = shown.length === ITEMS.length ? ITEMS.length + " " + catalog.noun + " von A bis Z" : shown.length + " von " + ITEMS.length + " " + catalog.noun;
+    viewCfg.listEl.textContent = "";
     if (!shown.length) {
       var e = document.createElement("p");
       e.className = "empty";
       e.textContent = "Dazu habe ich nichts gefunden. Probiere einen anderen Namen oder eine andere Marke.";
-      listEl.appendChild(e);
+      viewCfg.listEl.appendChild(e);
       return;
     }
     var frag = document.createDocumentFragment();
@@ -1419,25 +1475,23 @@ if ('serviceWorker' in navigator) {
       t.className = "title";
       t.textContent = item.title;
       names.appendChild(t);
-      var availability = el("span", "stock" + (!stockReady ? " unknown" : ""), stockText(item));
-      names.appendChild(availability);
+      names.appendChild(el("span", "stock" + (!stockReady && key === "duefte" ? " unknown" : ""), stockText(item, key)));
       var go = document.createElement("span");
       go.className = "go";
-      go.textContent = SIZES.every(function(sz){ return inventoryCount(item, sz) === 0; }) ? "Bestellen" : "Auswählen";
+      go.textContent = catalog.sizes.every(function (sz) { return inventoryCount(item, sz) === 0; }) ? "Bestellen" : "Auswählen";
       btn.appendChild(names);
       btn.appendChild(go);
-      btn.addEventListener("click", function () { openSheet(item, btn); });
+      btn.addEventListener("click", function () { openSheet(item, btn, key); });
       li.appendChild(btn);
       ul.appendChild(li);
     });
-    listEl.appendChild(frag);
+    viewCfg.listEl.appendChild(frag);
   }
 
-  var timer;
-  qEl.addEventListener("input", function () {
-    clearTimeout(timer);
-    timer = setTimeout(function () { state.q = qEl.value; render(); }, 80);
-  });
+  function render() {
+    renderCatalog("duefte");
+    renderCatalog("oelroller");
+  }
 
   // ---- Reservierung ----
   var veil = document.getElementById("veil");
@@ -1499,24 +1553,25 @@ if ('serviceWorker' in navigator) {
     return { wrap: f, input: inp, err: err };
   }
 
-  function openSheet(item, trigger) {
+  function openSheet(item, trigger, catalogKey) {
     lastFocus = trigger;
     sheet.textContent = "";
     sheet.appendChild(head(item));
 
+    var catalog = getCatalog(catalogKey);
     var form = el("form");
     form.noValidate = true;
 
     var fs = el("fieldset");
     fs.appendChild(el("legend", null, "Größe"));
     var sizes = el("div", "sizes");
-    SIZES.forEach(function (s, idx) {
+    catalog.sizes.forEach(function (s, idx) {
       var lab = el("label", "size");
       var r = el("input");
       r.type = "radio"; r.name = "size"; r.value = String(s);
-      if (idx === 1) r.checked = true;
+      if (idx === Math.min(1, catalog.sizes.length - 1)) r.checked = true;
       var sp = el("span", null, s + " ml");
-      sp.appendChild(el("small", null, PRICES[s] + " €"));
+      sp.appendChild(el("small", null, priceFor(catalogKey, s) + " €"));
       lab.appendChild(r); lab.appendChild(sp);
       sizes.appendChild(lab);
     });
@@ -1524,6 +1579,8 @@ if ('serviceWorker' in navigator) {
     form.appendChild(fs);
     var stockHint = el("p", "note");
     form.appendChild(stockHint);
+    var shippingHint = el("p", "note");
+    form.appendChild(shippingHint);
     var quantityWrap = el("div", "field");
     var quantityLabel = el("label", "lbl", "Anzahl der Flakons");
     quantityLabel.htmlFor = "f-quantity";
@@ -1552,6 +1609,7 @@ if ('serviceWorker' in navigator) {
       go.textContent = "Zum Warenkorb hinzufügen";
       direct.textContent = ordering ? "Bestellen" : "Reservieren";
       stockHint.textContent = ordering ? "Bestellbar · aktuell nicht auf Lager" : available + " Flakons verfügbar";
+      shippingHint.textContent = (catalogKey === "duefte" && ordering) ? "Bei bestellten Düften fallen 5 € Versandkosten an. Ab zwei bestellten Düften versandkostenfrei." : (catalogKey === "oelroller" ? "3 ml kosten 6 € und 8 ml kosten 9 €." : "");
       quantityInput.max = String(ordering ? 20 : Math.min(20, available));
       if (Number(quantityInput.value) > Number(quantityInput.max)) quantityInput.value = quantityInput.max;
     }
@@ -1565,7 +1623,7 @@ if ('serviceWorker' in navigator) {
       var size = Number(form.querySelector('input[name="size"]:checked').value);
       var quantity = Number(quantityInput.value);
       var available = inventoryCount(item, size);
-      var current = cart.find(function(x){return x.name===item.name && x.size===size;});
+      var current = cart.find(function(x){return x.catalog===catalogKey && x.name===item.name && x.size===size;});
       var combined = quantity + (current ? current.quantity : 0);
       if (!Number.isInteger(quantity) || quantity < 1 || combined > 20 || (available > 0 && combined > available)) {
         stockHint.textContent = "Ungültige Stückzahl oder nicht genügend Bestand (inklusive Warenkorb).";
@@ -1574,11 +1632,11 @@ if ('serviceWorker' in navigator) {
       if (directCheckout) {
         // Direkte Einzelanfrage – bereits vorhandene Warenkorbpositionen bleiben erhalten.
         closeSheet();
-        openCart([{name:item.name,size:size,quantity:quantity}], true);
+        openCart([{catalog:catalogKey,name:item.name,size:size,quantity:quantity}], true);
         return;
       }
       if (current) current.quantity = combined;
-      else cart.push({name:item.name, size:size, quantity:quantity});
+      else cart.push({catalog:catalogKey,name:item.name, size:size, quantity:quantity});
       updateCartCount();
       closeSheet();
       openCart();
@@ -1597,6 +1655,16 @@ if ('serviceWorker' in navigator) {
     document.getElementById('cart-count').textContent = cart.reduce(function(n,x){return n+x.quantity;},0);
   }
   document.getElementById('nav-cart').addEventListener('click',openCart);
+  function shippingSummary(items, basedOnServer) {
+    var ordered = items.reduce(function(sum, line) {
+      var isPerfume = Number(line.size_ml || line.size) >= 30;
+      var outOfStock = basedOnServer
+        ? line.reservation_type === 'orderable'
+        : inventoryCountByName(line.perfume_name || line.name, Number(line.size)) === 0;
+      return sum + (isPerfume && outOfStock ? Number(line.quantity) || 0 : 0);
+    }, 0);
+    return { ordered: ordered, fee: ordered === 1 ? 5 : 0 };
+  }
   function openCart(directItems, isDirect){
     var checkoutItems = isDirect ? directItems : cart;
     lastFocus=document.getElementById('nav-cart');
@@ -1606,21 +1674,28 @@ if ('serviceWorker' in navigator) {
     checkoutItems.forEach(function(line){
       var row=el('div','cart-line'),left=el('div');
       left.appendChild(el('div',null,line.name));
-      left.appendChild(el('div','order-meta',line.quantity+' × '+line.size+' ml · '+(line.quantity*PRICES[line.size])+' €'));
+      left.appendChild(el('div','order-meta',productLabel(line.catalog)+' · '+line.quantity+' × '+line.size+' ml · '+(line.quantity*priceFor(line.catalog,line.size))+' €'));
       var remove=el('button',null,'Entfernen');remove.type='button';remove.hidden=!!isDirect;
       remove.addEventListener('click',function(){cart=cart.filter(function(x){return x!==line;});updateCartCount();openCart();});
       row.appendChild(left);row.appendChild(remove);sheet.appendChild(row);
     });
     if(checkoutItems.length){
-      var total=checkoutItems.reduce(function(n,x){return n+x.quantity*PRICES[x.size];},0);
-      sheet.appendChild(el('h3',null,'Gesamtwert: '+total+' €'));
+      var subtotal=checkoutItems.reduce(function(n,x){return n+x.quantity*priceFor(x.catalog,x.size);},0);
+      var calculatedShipping=shippingSummary(checkoutItems,false);
+      var shipping=calculatedShipping.fee;
+      var total=subtotal+shipping;
+      sheet.appendChild(el('h3',null,'Zwischensumme: '+subtotal+' €'));
+      var shippingView=el('p','note',shipping ? 'Versandkosten: 5 € (1 bestellpflichtiger Duft)' : calculatedShipping.ordered>=2 ? 'Versandkosten: 0 € (ab 2 bestellpflichtigen Düften)' : 'Versandkosten: 0 €');
+      sheet.appendChild(shippingView);
+      var totalView=el('h3',null,'Gesamtbetrag: '+total+' €');
+      sheet.appendChild(totalView);
       var form=el('form');
       var fields=el('div','fields');
       var fn=field('cart-first','Vorname',{autocomplete:'given-name',value:lsGet('lzd-first')});
       var ln=field('cart-last','Nachname',{autocomplete:'family-name',value:lsGet('lzd-last')});
       var ph=field('cart-phone','Telefon (freiwillig)',{type:'tel',autocomplete:'tel',full:true,value:lsGet('lzd-phone')});
       fields.appendChild(fn.wrap);fields.appendChild(ln.wrap);fields.appendChild(ph.wrap);form.appendChild(fields);
-      form.appendChild(el('p','note','Erst mit dem nächsten Klick wird die gesamte Anfrage gespeichert und vorhandener Bestand abgezogen. Anschließend öffnet sich WhatsApp. Bitte die Nachricht dort versenden.'));
+      form.appendChild(el('p','note','Erst mit dem nächsten Klick wird die gesamte Anfrage gespeichert und vorhandener Bestand abgezogen. Anschließend öffnet sich WhatsApp. Bitte die Nachricht dort versenden. Bei bestellten Düften werden 5 € Versand berechnet, ab zwei bestellten Düften ist der Versand kostenfrei.'));
       var submit=el('button','primary','Gesamte Anfrage per WhatsApp senden');submit.type='submit';form.appendChild(submit);
       var status=el('p','note');status.setAttribute('role','status');form.appendChild(status);
       var requestId=(window.crypto&&crypto.randomUUID)?crypto.randomUUID():null;
@@ -1640,9 +1715,21 @@ if ('serviceWorker' in navigator) {
           });
           if(!Array.isArray(response)||response.length!==snapshot.length)throw new Error('Unvollständige Rückmeldung von Supabase.');
           var lines=response.map(function(r){
-            return (r.reservation_type==='orderable'?'Bestellung':'Reservierung')+': '+r.quantity+' × '+r.perfume_name+' ('+r.size_ml+' ml) – '+(r.quantity*PRICES[r.size_ml])+' €';
+            var kind = (Number(r.size_ml)===3||Number(r.size_ml)===8) ? 'Ölroller' : 'Duft';
+            var unitPrice = priceFor(kind === 'Ölroller' ? 'oelroller' : 'duefte', Number(r.size_ml));
+            return (r.reservation_type==='orderable'?'Bestellung':'Reservierung')+': '+r.quantity+' × '+r.perfume_name+' ('+kind+' · '+r.size_ml+' ml) – '+(r.quantity*unitPrice)+' €';
           });
-          message='Hallo, ich möchte folgende Düfte anfragen:\n'+lines.join('\n')+'\nGesamtwert: '+total+' €\nName: '+first+' '+last+(phone?'\nTelefon: '+phone:'')+'\nAnfragenummer: '+requestId;
+          // Die tatsächlich gespeicherten Bestellarten sind maßgeblich für den Versand.
+          var confirmedShipping=shippingSummary(response,true);
+          var confirmedSubtotal=response.reduce(function(sum,r) {
+            var unit=priceFor((Number(r.size_ml)===3||Number(r.size_ml)===8)?'oelroller':'duefte', Number(r.size_ml));
+            return sum + unit*(Number(r.quantity)||0);
+          },0);
+          var confirmedTotal=confirmedSubtotal+confirmedShipping.fee;
+          shippingView.textContent=confirmedShipping.fee ? 'Versandkosten: 5 € (1 bestellpflichtiger Duft)' : confirmedShipping.ordered>=2 ? 'Versandkosten: 0 € (ab 2 bestellpflichtigen Düften)' : 'Versandkosten: 0 €';
+          totalView.textContent='Gesamtbetrag: '+confirmedTotal+' €';
+          var shippingLine='\nVersandkosten: '+confirmedShipping.fee+' €';
+          message='Hallo, ich möchte folgende Düfte anfragen:\n'+lines.join('\n')+'\nZwischensumme: '+confirmedSubtotal+' €'+shippingLine+'\nGesamtbetrag: '+confirmedTotal+' €\nName: '+first+' '+last+(phone?'\nTelefon: '+phone:'')+'\nAnfragenummer: '+requestId;
           finished=true;
           if(!isDirect){cart=[];updateCartCount();}
           lsSet('lzd-first',first);lsSet('lzd-last',last);lsSet('lzd-phone',phone);
@@ -1740,7 +1827,7 @@ if ('serviceWorker' in navigator) {
     var reserved=newRows.filter(function(r){return r.reservation_type==='reserved';});
     var orderable=newRows.filter(function(r){return r.reservation_type==='orderable';});
     function count(row){return Number(row.quantity) || 1;}
-    function amount(row){return (Number(row.price_eur)||({30:25,50:35,100:45}[Number(row.size_ml)]||0))*count(row);}
+    function amount(row){return (Number(row.price_eur)||({3:6,8:9,30:25,50:35,100:45}[Number(row.size_ml)]||0))*count(row);}
     document.getElementById('metric-reservations').textContent=euro.format(newRows.reduce(function(a,r){return a+amount(r);},0));
     document.getElementById('metric-revenue').textContent=euro.format(paidRows.reduce(function(a,r){return a+amount(r);},0));
     document.getElementById('metric-count').textContent=reserved.reduce(function(a,r){return a+count(r);},0);
@@ -1769,7 +1856,7 @@ if ('serviceWorker' in navigator) {
       if(g.cartId)info.appendChild(el('div','order-meta','Auftrag #'+g.cartId.slice(0,8)));
       g.rows.forEach(function(r){
         var detail=el('div','order-line');
-        detail.appendChild(el('span','order-line-name',count(r)+' × '+r.perfume_name+' · '+r.size_ml+' ml'));
+        detail.appendChild(el('span','order-line-name',count(r)+' × '+r.perfume_name+' · '+r.size_ml+' ml · '+((Number(r.size_ml)===3||Number(r.size_ml)===8)?'Ölroller':'Duft')));
         detail.appendChild(el('span','order-line-price',euro.format(amount(r))));
         info.appendChild(detail);
         info.appendChild(el('div','order-state',r.reservation_type==='orderable'?'Bestellung · Bestellbar':r.paid_at?'Reserviert · Bezahlt':'Reserviert · Zahlung offen'));
