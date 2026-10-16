@@ -1015,6 +1015,95 @@
     .site-credits-contact { flex-direction: column; gap: 5px; }
     .site-credits-contact span { display: none; }
   }
+
+/* Premium-Layout 2026 — ausschließlich Darstellung, keine Änderungen an Farben oder Funktionen */
+@media (min-width: 1024px) {
+  .top { max-width: 1180px; }
+  .nav { column-gap: 10px; }
+  .nav button { white-space: nowrap; padding-inline: clamp(12px, 1.25vw, 20px); }
+  .intro { padding: 54px clamp(36px, 5vw, 72px) 56px; }
+  .brand-story { margin-block: 84px 50px; }
+  #view-duefte, #view-oelroller { padding-top: 42px; }
+}
+.top { transition: box-shadow .25s ease, border-color .25s ease; }
+.nav button { display:inline-flex; align-items:center; justify-content:center; text-align:center; line-height:1.35; }
+.nav button:focus-visible { outline-offset:4px; }
+.intro .tagline { letter-spacing:-.022em; }
+.intro .eyebrow { margin-bottom:16px; }
+.intro .body { text-wrap:pretty; }
+.prices-title { margin-top:48px; margin-bottom:20px; }
+.prices { align-items:stretch; }
+.prices li { display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:156px; transition:transform .2s ease,border-color .2s ease,box-shadow .2s ease; }
+.prices li:hover { transform:translateY(-2px); border-color:rgba(220,199,162,.23); }
+.price-note { max-width:66ch; margin-inline:auto; line-height:1.65; }
+.feature-grid { margin-top:42px; }
+.feature { display:flex; flex-direction:column; justify-content:center; gap:10px; }
+.feature h3 { line-height:1.18; }
+.feature p { line-height:1.6; }
+.contact-panel { margin-top:36px; }
+.section-head { margin-bottom:26px; }
+.section-head h2 { line-height:1; letter-spacing:-.025em; }
+.search-bar { margin-top:22px; }
+.search { min-height:64px; }
+.chip { transition:background .18s ease,color .18s ease,border-color .18s ease; }
+.letter { margin-top:48px; margin-bottom:18px; }
+.list { display:grid; gap:12px; }
+.row { gap:16px; padding:22px 24px; border-radius:24px; }
+.row .title { line-height:1.18; }
+.row .go { flex-shrink:0; white-space:nowrap; }
+.row .stock { line-height:1.5; }
+.sheet { box-shadow:0 28px 110px rgba(0,0,0,.65); }
+.sheet h3 { letter-spacing:-.015em; }
+.size span { min-height:86px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:5px; }
+.field input { min-height:50px; }
+.primary,.secondary { min-height:48px; }
+.admin-page { max-width:1120px; }
+.admin-page > h2 { letter-spacing:-.022em; }
+.admin-tabs { padding:8px; gap:8px; }
+.admin-tabs button { min-height:48px; }
+.admin-panel { padding:clamp(20px,3vw,36px); }
+.metric-grid { gap:18px; }
+.metric { padding:24px; min-height:156px; }
+.order-card { margin-bottom:16px; padding:26px; }
+.order-card .order-line { line-height:1.55; }
+#stock-panel .admin-item { padding:22px; }
+.admin-controls { gap:14px; }
+.admin-controls button { min-height:48px; }
+.site-credits { padding-top:32px; }
+@media (min-width: 761px) and (max-width: 1023px) {
+ .top { gap:16px; }
+ .brand img { height:80px; }
+ .nav { gap:8px; }
+ .nav button { padding:10px 12px; font-size:.72rem; min-height:46px; }
+ .prices { grid-template-columns:repeat(3,minmax(0,1fr)); }
+}
+@media (max-width:760px) {
+ .top { align-items:center; }
+ .nav { justify-content:center; }
+ .nav button { letter-spacing:.12em; }
+ .intro { margin-top:18px; }
+ .prices { grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; }
+ .prices li { min-height:130px; padding:18px 10px; }
+ .prices .eur { font-size:2rem; }
+ .brand-story { margin-top:48px; }
+ .row { padding:18px 16px; }
+ .admin-panel { padding:20px 16px; }
+ .metric { min-height:132px; padding:18px; }
+ .order-card { padding:20px 16px; }
+}
+@media (max-width:420px) {
+ .top { padding:12px; gap:10px; }
+ .brand img { height:62px; }
+ .nav { gap:7px; }
+ .nav button { font-size:.64rem; padding:8px 9px; min-height:42px; }
+ .prices { gap:10px; }
+ .prices li { min-height:122px; }
+ .prices .ml { font-size:.99rem; }
+ .prices .eur { font-size:1.8rem; }
+ .row .go { padding:9px 10px; }
+}
+@media (prefers-reduced-motion:reduce) { .prices li,.top,.nav button,.chip { transition:none!important; } }
+
 </style>
 
 <header class="wrap top">
