@@ -1192,6 +1192,20 @@ footer{margin-top:80px!important;padding-bottom:48px!important}
 }
 @media (prefers-reduced-motion:reduce) { .prices li,.top,.nav button,.chip { transition:none!important; } }
 
+
+/* Merkliste und Katalogwerkzeuge – ausschließlich Darstellung */
+.catalog-tools{display:flex;align-items:center;flex-wrap:wrap;gap:12px;margin:18px 0 15px}
+.catalog-tools-label{font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin-right:5px}
+.favorite-filter,.clear-filters{min-height:43px;border:1px solid rgba(220,199,162,.24);border-radius:999px;background:rgba(220,199,162,.045);color:var(--fg);padding:10px 17px;cursor:pointer;font-size:.82rem;transition:background .2s,border-color .2s}
+.favorite-filter:hover,.clear-filters:hover{border-color:var(--accent);background:rgba(220,199,162,.12)}
+.favorite-filter[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.favorite-filter span{display:inline-block;margin-left:6px;font-variant-numeric:tabular-nums}
+#view-duefte .list>li,#view-oelroller .list>li{position:relative;min-width:0}
+#view-duefte .list>li>.row,#view-oelroller .list>li>.row{padding-right:58px!important;width:100%}
+.favorite-heart{position:absolute;right:14px;top:14px;z-index:2;display:flex;align-items:center;justify-content:center;width:37px;height:37px;border:1px solid rgba(220,199,162,.23);border-radius:50%;background:#171411;color:var(--accent);font-size:25px;line-height:1;cursor:pointer;transition:background .2s,transform .2s}
+.favorite-heart:hover{background:#2b241c;transform:scale(1.06)}
+.favorite-heart[aria-pressed="true"]{background:rgba(220,199,162,.16);border-color:var(--accent)}
+@media(max-width:560px){.catalog-tools{gap:8px}.catalog-tools-label{width:100%}.favorite-filter,.clear-filters{font-size:.78rem;padding:9px 13px}.favorite-heart{top:10px;right:10px}}
 </style>
 
 <header class="wrap top">
@@ -1292,6 +1306,7 @@ footer{margin-top:80px!important;padding-bottom:48px!important}
       <label class="lbl sr-only" for="q">Duft suchen</label>
       <input id="q" class="search" type="search" placeholder="Duft oder Marke suchen" autocomplete="off" enterkeyhint="search">
     </div>
+    <div class="catalog-tools" role="group" aria-label="Produktansicht"><span class="catalog-tools-label">Ansicht</span><button class="favorite-filter" id="fav-only" type="button" aria-pressed="false">♡ Nur Merkliste <span id="fav-count">0</span></button><button class="clear-filters" id="clear-filters" type="button">Filter zurücksetzen</button></div>
     <div class="brand-filter-wrap" aria-label="Markenfilter">
       <button class="brand-scroll-arrow" id="brand-scroll-left" type="button" aria-label="Marken nach links scrollen">&#8249;</button>
       <div class="chips" id="chips" role="group" aria-label="Nach Marke filtern" tabindex="0"></div>
@@ -1312,6 +1327,7 @@ footer{margin-top:80px!important;padding-bottom:48px!important}
     </div>
     <p class="price-note">Alle Düfte gibt es auch als Ölroller – 3 ml für 6 € und 8 ml für 9 €.</p>
     <p class="price-note">Ölroller sind direkt bestellbar. Bei bestellten Düften berechnen wir 5 € Versandkosten. Ab zwei bestellten Düften ist der Versand kostenfrei.</p>
+    <div class="catalog-tools" role="group" aria-label="Produktansicht"><span class="catalog-tools-label">Ansicht</span><button class="favorite-filter" id="oel-fav-only" type="button" aria-pressed="false">♡ Nur Merkliste <span id="oel-fav-count">0</span></button><button class="clear-filters" id="oel-clear-filters" type="button">Filter zurücksetzen</button></div>
     <div class="brand-filter-wrap" aria-label="Markenfilter für Ölroller">
       <button class="brand-scroll-arrow" id="oel-brand-scroll-left" type="button" aria-label="Marken nach links scrollen">&#8249;</button>
       <div class="chips" id="oel-chips" role="group" aria-label="Ölroller nach Marke filtern" tabindex="0"></div>
@@ -1620,12 +1636,53 @@ if ('serviceWorker' in navigator) {
   });
   window.addEventListener("resize", function () { Object.keys(catalogViews).forEach(function (key) { updateBrandScrollButtons(catalogViews[key]); }); });
 
+  // Favoriten: ausschließlich lokal auf diesem Gerät gespeichert. Keine Bestell-/Backendänderungen.
+  var favoriteKey = "lzd_favorites_v1";
+  var favorites = (function () {
+    try { var v = JSON.parse(localStorage.getItem(favoriteKey) || "[]"); return Array.isArray(v) ? v.filter(function (x) { return typeof x === "string"; }) : []; }
+    catch (e) { return []; }
+  })();
+  function isFavorite(name) { return favorites.indexOf(name) !== -1; }
+  function updateFavoriteControls() {
+    Object.keys(catalogViews).forEach(function (key) {
+      var cfg = catalogViews[key];
+      var prefix = key === "oelroller" ? "oel-" : "";
+      var button = document.getElementById(prefix + "fav-only");
+      button.setAttribute("aria-pressed", cfg.state.favoritesOnly ? "true" : "false");
+      var count = document.getElementById(prefix + "fav-count");
+      count.textContent = favorites.length;
+    });
+  }
+  function toggleFavorite(name) {
+    favorites = isFavorite(name) ? favorites.filter(function (n) { return n !== name; }) : favorites.concat(name);
+    try { localStorage.setItem(favoriteKey, JSON.stringify(favorites)); } catch (e) {}
+    updateFavoriteControls();
+    render();
+  }
+  Object.keys(catalogViews).forEach(function (key) {
+    var cfg = catalogViews[key];
+    var prefix = key === "oelroller" ? "oel-" : "";
+    cfg.state.favoritesOnly = false;
+    document.getElementById(prefix + "fav-only").addEventListener("click", function () {
+      cfg.state.favoritesOnly = !cfg.state.favoritesOnly;
+      updateFavoriteControls(); renderCatalog(key);
+    });
+    document.getElementById(prefix + "clear-filters").addEventListener("click", function () {
+      cfg.state.brand = ""; cfg.state.q = ""; cfg.state.favoritesOnly = false;
+      cfg.qEl.value = "";
+      Array.prototype.forEach.call(cfg.chipsEl.children, function (chip) { chip.setAttribute("aria-pressed", chip.dataset.value === "" ? "true" : "false"); });
+      updateFavoriteControls(); renderCatalog(key);
+    });
+  });
+  updateFavoriteControls();
+
   function renderCatalog(key) {
     var catalog = getCatalog(key);
     var viewCfg = catalogViews[key];
     var q = norm(viewCfg.state.q.trim());
     var shown = ITEMS.filter(function (i) {
       if (viewCfg.state.brand && i.brand !== viewCfg.state.brand) return false;
+      if (viewCfg.state.favoritesOnly && !isFavorite(i.name)) return false;
       return !q || norm(i.name).indexOf(q) !== -1;
     });
     viewCfg.countEl.textContent = shown.length === ITEMS.length ? ITEMS.length + " " + catalog.noun + " von A bis Z" : shown.length + " von " + ITEMS.length + " " + catalog.noun;
@@ -1675,6 +1732,15 @@ if ('serviceWorker' in navigator) {
       btn.appendChild(go);
       btn.addEventListener("click", function () { openSheet(item, btn, key); });
       li.appendChild(btn);
+      var heart = document.createElement("button");
+      heart.type = "button";
+      heart.className = "favorite-heart";
+      heart.textContent = isFavorite(item.name) ? "♥" : "♡";
+      heart.setAttribute("aria-pressed", isFavorite(item.name) ? "true" : "false");
+      heart.setAttribute("aria-label", item.name + (isFavorite(item.name) ? " aus Merkliste entfernen" : " zur Merkliste hinzufügen"));
+      heart.title = isFavorite(item.name) ? "Aus Merkliste entfernen" : "Zur Merkliste hinzufügen";
+      heart.addEventListener("click", function () { toggleFavorite(item.name); });
+      li.appendChild(heart);
       ul.appendChild(li);
     });
     viewCfg.listEl.appendChild(frag);
