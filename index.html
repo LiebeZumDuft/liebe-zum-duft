@@ -1046,6 +1046,7 @@
       </ul>
       <p class="price-note">Bei jedem Duft wird dir direkt der aktuelle Bestand angezeigt. Ist der Bestand 0, erscheint automatisch „Bestellbar“.</p>
       <p class="price-note">Bei bestellten Düften berechnen wir 5 € Versandkosten. Ab zwei bestellten Düften ist der Versand kostenfrei.</p>
+      <p class="price-note"><strong>Ein kleines Geschenk zu jedem Parfüm:</strong> Zu jedem gekauften Parfüm erhältst du einen Ölroller-Tester kostenlos dazu.</p>
 
       <div class="feature-grid" aria-label="Vorteile">
         <article class="feature">
@@ -1696,6 +1697,7 @@ if ('serviceWorker' in navigator) {
       var ph=field('cart-phone','Telefon (freiwillig)',{type:'tel',autocomplete:'tel',full:true,value:lsGet('lzd-phone')});
       fields.appendChild(fn.wrap);fields.appendChild(ln.wrap);fields.appendChild(ph.wrap);form.appendChild(fields);
       form.appendChild(el('p','note','Erst mit dem nächsten Klick wird die gesamte Anfrage gespeichert und vorhandener Bestand abgezogen. Anschließend öffnet sich WhatsApp. Bitte die Nachricht dort versenden. Bei bestellten Düften werden 5 € Versand berechnet, ab zwei bestellten Düften ist der Versand kostenfrei.'));
+      if(checkoutItems.some(function(x){return x.catalog !== 'oelroller';})) form.appendChild(el('p','note','Gratis-Aktion: Zu jedem gekauften Parfüm gibt es einen Ölroller-Tester kostenlos dazu. Der Tester wird nicht berechnet.'));
       var submit=el('button','primary','Gesamte Anfrage per WhatsApp senden');submit.type='submit';form.appendChild(submit);
       var status=el('p','note');status.setAttribute('role','status');form.appendChild(status);
       var requestId=(window.crypto&&crypto.randomUUID)?crypto.randomUUID():null;
@@ -1729,6 +1731,8 @@ if ('serviceWorker' in navigator) {
           shippingView.textContent=confirmedShipping.fee ? 'Versandkosten: 5 € (1 bestellpflichtiger Duft)' : confirmedShipping.ordered>=2 ? 'Versandkosten: 0 € (ab 2 bestellpflichtigen Düften)' : 'Versandkosten: 0 €';
           totalView.textContent='Gesamtbetrag: '+confirmedTotal+' €';
           var shippingLine='\nVersandkosten: '+confirmedShipping.fee+' €';
+          var testerCount=response.reduce(function(n,r){return n+((Number(r.size_ml)===3||Number(r.size_ml)===8)?0:(Number(r.quantity)||0));},0);
+          var testerLine=testerCount?'\nGratis dazu bei Kauf: '+testerCount+' Ölroller-Tester (0 €)':'';
           message='Hallo, ich möchte folgende Düfte anfragen:\n'+lines.join('\n')+'\nZwischensumme: '+confirmedSubtotal+' €'+shippingLine+'\nGesamtbetrag: '+confirmedTotal+' €\nName: '+first+' '+last+(phone?'\nTelefon: '+phone:'')+'\nAnfragenummer: '+requestId;
           finished=true;
           if(!isDirect){cart=[];updateCartCount();}
