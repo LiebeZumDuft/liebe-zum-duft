@@ -1,0 +1,7 @@
+Browser-Tab-Logo aktualisieren (Original mit schwarzem Hintergrund)
+
+Alle Dateien dieses Ordners direkt ins Hauptverzeichnis des GitHub-Repositories laden.
+Nicht config.js ersetzen.
+Nach Commit ca. 2 Minuten warten und Chrome mit Strg+Shift+R hart neu laden.
+Falls das alte Icon bleibt: Tab schliessen, Website neu oeffnen.
+Dieses Update aendert das sichtbare Website-Logo und das App-Icon nicht.
