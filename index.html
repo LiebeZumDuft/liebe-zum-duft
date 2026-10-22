@@ -73,6 +73,57 @@
 .order-line{display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px solid rgba(220,199,162,.09);font-size:1.03rem}
 .order-line-price{white-space:nowrap;color:var(--accent)}
 .order-payment-controls{grid-column:1/-1;display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+
+/* === Duftbilder Update === */
+.row-main{flex:1;min-width:0;display:flex;align-items:flex-end;justify-content:space-between;gap:18px}
+.row-thumb{position:relative;flex:0 0 136px;width:136px;min-height:136px;display:block;overflow:hidden;border-radius:22px;border:1px solid rgba(220,199,162,.16);background:rgba(255,255,255,.03);box-shadow:0 12px 30px rgba(0,0,0,.2)}
+.row-thumb img{display:block;width:100%;height:100%;object-fit:cover;transform:scale(1.01);filter:saturate(1.04) contrast(1.03)}
+.row-thumb::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,0) 38%,rgba(0,0,0,.22) 62%,rgba(0,0,0,.72) 100%)}
+.row-thumb-badge{position:absolute;left:10px;right:10px;bottom:10px;z-index:1;padding:7px 10px;border-radius:999px;background:rgba(7,7,7,.58);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.12);font-size:.60rem;letter-spacing:.18em;text-transform:uppercase;color:#f6f1e6;text-align:center;line-height:1.3}
+.row .names{justify-content:center}
+.row .stock{max-width:44ch}
+.sheet-media{margin:0 0 22px;padding:0;overflow:hidden;border-radius:26px;border:1px solid rgba(220,199,162,.16);background:linear-gradient(180deg,rgba(255,255,255,.04),rgba(255,255,255,.02));box-shadow:0 20px 42px rgba(0,0,0,.22)}
+.sheet-media img{display:block;width:100%;aspect-ratio:16/9;object-fit:cover}
+.sheet-media-caption{margin:0;padding:13px 16px;border-top:1px solid rgba(220,199,162,.12);background:linear-gradient(180deg,rgba(220,199,162,.06),rgba(255,255,255,.02));font-size:.68rem;letter-spacing:.24em;text-transform:uppercase;color:var(--accent);text-align:center}
+@media (max-width:760px){
+  .row-main{flex-direction:column;align-items:flex-start;justify-content:center;gap:12px}
+  .row-thumb{flex-basis:96px;width:96px;min-height:96px;border-radius:18px}
+  .row-thumb-badge{left:8px;right:8px;bottom:8px;font-size:.54rem;padding:5px 7px;letter-spacing:.12em}
+  .row .go{align-self:flex-start}
+  .sheet-media img{aspect-ratio:4/3}
+}
+@media (max-width:430px){
+  .row-thumb{flex-basis:88px;width:88px;min-height:88px}
+}
+
+
+/* Duftgalerie V2: Bildkarten, feinere Mobilansichten und separate Ölroller-Präsentation. */
+#view-duefte .list li,#view-oelroller .list li{min-width:0}
+#view-duefte .row,#view-oelroller .row{display:flex!important;flex-direction:column!important;align-items:stretch!important;gap:0!important;padding:0!important;overflow:hidden;min-height:0!important;border-radius:24px!important}
+#view-duefte .row-thumb,#view-oelroller .row-thumb{width:100%;flex:0 0 auto;min-height:0;height:auto;aspect-ratio:16/10;border:0;border-radius:0;box-shadow:none}
+#view-duefte .row-thumb img,#view-oelroller .row-thumb img{width:100%;height:100%;object-fit:cover;transition:transform .35s ease}
+#view-duefte .row:hover .row-thumb img,#view-oelroller .row:hover .row-thumb img{transform:scale(1.06)}
+#view-duefte .row-main,#view-oelroller .row-main{display:flex;flex:1;flex-direction:column;align-items:stretch;justify-content:space-between;padding:20px 22px 23px;gap:14px}
+#view-duefte .row .names,#view-oelroller .row .names{min-width:0;display:flex;gap:7px;flex-direction:column;justify-content:flex-start}
+#view-duefte .row .go,#view-oelroller .row .go{align-self:flex-start}
+#view-duefte .row-thumb-badge,#view-oelroller .row-thumb-badge{left:14px;right:auto;bottom:14px;width:auto;max-width:calc(100% - 28px);font-size:.64rem}
+#view-oelroller .row-thumb{aspect-ratio:16/9}
+#view-oelroller .row-thumb img{object-position:center 43%;filter:brightness(.8) saturate(.9) contrast(1.08)}
+#view-oelroller .row-thumb:before{content:'';position:absolute;z-index:2;top:10%;right:13%;height:68%;width:16%;border-radius:10px 10px 14px 14px;background:linear-gradient(90deg,rgba(49,28,11,.9),rgba(204,161,89,.85) 18%,rgba(50,30,15,.96) 49%,rgba(230,198,142,.9) 81%,rgba(35,23,14,.96));border:1px solid rgba(238,200,139,.7);box-shadow:0 8px 22px rgba(0,0,0,.6);transform:rotate(11deg);pointer-events:none}
+#view-oelroller .row-thumb:after{content:'';position:absolute;z-index:3;top:3%;right:15%;height:15%;width:12%;border-radius:4px 4px 2px 2px;background:linear-gradient(90deg,#ae8446,#f3d99e 35%,#5c411d 75%,#d1a86f);box-shadow:0 3px 12px rgba(0,0,0,.5);transform:rotate(11deg);pointer-events:none}
+#view-oelroller .row-thumb-badge{bottom:12px;z-index:4}
+.sheet-media{position:relative;margin-bottom:24px;border-radius:28px}
+.sheet-media img{aspect-ratio:16/9;max-height:360px;object-position:center 42%}
+.sheet-media-caption{font-size:.74rem;padding:14px 18px;letter-spacing:.16em}
+.sheet-product-kicker{margin:0 0 14px;color:var(--accent);font-size:.73rem;text-transform:uppercase;letter-spacing:.2em}
+.sheet-product-facts{display:flex;gap:9px;flex-wrap:wrap;margin:0 0 20px}
+.sheet-product-facts span{display:inline-flex;padding:9px 13px;border-radius:999px;border:1px solid rgba(220,199,162,.19);color:var(--muted);font-size:.78rem;background:rgba(220,199,162,.035)}
+.sheet-oil-media img{object-position:center 35%;filter:saturate(.92) brightness(.9)}
+.sheet-oil-media:before{content:'ÖLROLLER';position:absolute;z-index:2;top:14px;left:14px;padding:8px 12px;border-radius:999px;color:var(--accent);background:rgba(9,8,7,.8);border:1px solid rgba(220,199,162,.28);font-size:.7rem;letter-spacing:.16em}
+@media(max-width:760px){#view-duefte .row-main,#view-oelroller .row-main{padding:17px 17px 20px;gap:13px}#view-duefte .row-thumb,#view-oelroller .row-thumb{aspect-ratio:16/9;max-height:290px}.sheet-media img{aspect-ratio:4/3;max-height:300px}}
+@media(min-width:761px) and (max-width:1020px){#view-duefte .list,#view-oelroller .list{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(prefers-reduced-motion:reduce){#view-duefte .row-thumb img,#view-oelroller .row-thumb img{transition:none}}
+
 </style>
 <style id="modern-luxury-refresh">
   body::before, body::after {
@@ -1715,6 +1766,81 @@ if ('serviceWorker' in navigator) {
   });
   updateFavoriteControls();
 
+
+  var SCENT_IMAGES = {
+    citrus: { src: "assets/scents/citrus-marine.png", label: "Zitrisch · frisch" },
+    cherry: { src: "assets/scents/dark-cherry.png", label: "Fruchtig · sinnlich" },
+    tobacco: { src: "assets/scents/tobacco-vanilla-honey.png", label: "Warm · gourmand" },
+    oudrose: { src: "assets/scents/oud-rose-amber.png", label: "Oud · Rose · Amber" },
+    coffee: { src: "assets/scents/coffee-rose-vanilla.png", label: "Kaffee · Rose" },
+    whitefloral: { src: "assets/scents/white-floral-musk.png", label: "Floral · weich" },
+    cola: { src: "assets/scents/tonka-cola.png", label: "Tonka · Cola" },
+    tropical: { src: "assets/scents/tropical-coconut.png", label: "Sonnig · tropisch" },
+    green: { src: "assets/scents/green-tea-botanical.png", label: "Grün · aromatisch" },
+    woody: { src: "assets/scents/woody-amber-spice.png", label: "Holzig · elegant" }
+  };
+
+  function scentProfileText(item) {
+    var profile = profileFor(item);
+    return [item.name || "", item.brand || "", profile ? profile[0] : "", profile ? profile[1] : "", profile ? profile[2] : ""].join(" ").toLowerCase();
+  }
+
+  function imageForItem(item, catalogKey) {
+    var text = scentProfileText(item);
+    function has(re) { return re.test(text); }
+    var family = "woody";
+    if (has(/cola|tonka/)) family = "cola";
+    else if (has(/kaffee|cafe|café|coffee|schokolad|chocolate|mokka|cappuccino/)) family = "coffee";
+    else if (has(/oud|rose|rosig|oriental|harzig|resin|satin mood|ispahan/)) family = "oudrose";
+    else if (has(/tabak|tobacco|vanille|honig|zimt|gourmand|mandel/)) family = "tobacco";
+    else if (has(/kokos|tropisch|island|beach|sonnig|soleil/)) family = "tropical";
+    else if (has(/tee|wulong|bergamotte 22|bergamotte|mate|eukalyptus|grün|green|kräuter|krauter|salbei/)) family = "green";
+    else if (has(/weißbl|weissbl|weisse bl|weiße bl|moschus|musk|sauber|rein|blanche|gardenia|jasmin|tuberose|lily|lilie/)) family = "whitefloral";
+    else if (has(/kirsch|cherry|pfirsich|peach|apfel|apple|litschi|fruchtig|beeren|ananas/)) family = "cherry";
+    else if (has(/zitrisch|citru|bergam|mandarin|mandarine|yuzu|salz|sea|marine|maritim|wasser|fresh|frisch|limette|zitrone|neroli/)) family = "citrus";
+    else if (has(/holzig|holz|vetiver|patchouli|würzig|ambriert|amber|iris|rauchig|smoke/)) family = "woody";
+    // Eindeutig zugeordnete Kompositionen erhalten eine konsistente eigene Bildwelt.
+    var named = {
+      "Tom Ford Lost Cherry": "cherry", "Tom Ford Cherry Smoke": "cherry", "Tom Ford Bitter Peach": "cherry",
+      "Tom Ford Tobacco Vanille": "tobacco", "Xerjoff Naxos": "tobacco",
+      "Xerjoff Torino 22": "green", "Xerjoff Alexandria II": "oudrose",
+      "Montale Intense Café": "coffee", "Mancera Tonka Cola": "cola",
+      "Louis Vuitton California Dream": "citrus", "Kilian Black Phantom": "coffee",
+      "Creed Virgin Island Water": "tropical", "Nishane Wulong Cha": "green",
+      "Byredo Blanche": "whitefloral", "Montale Chocolate Greedy": "coffee",
+      "Dior Oud Ispahan": "oudrose", "Mancera Red Tobacco": "tobacco"
+    };
+    if (named[item.name]) family = named[item.name];
+    return { family: family, src: SCENT_IMAGES[family].src, label: SCENT_IMAGES[family].label };
+  }
+
+  function makeScentThumb(item, catalogKey) {
+    var meta = imageForItem(item, catalogKey);
+    var thumb = document.createElement("span");
+    thumb.className = "row-thumb";
+    var image = document.createElement("img");
+    image.src = meta.src;
+    image.alt = item.publicName + " – Duftbild";
+    image.loading = "lazy";
+    image.decoding = "async";
+    thumb.appendChild(image);
+    thumb.appendChild(el("span", "row-thumb-badge", meta.label));
+    return thumb;
+  }
+
+  function makeScentFigure(item, catalogKey) {
+    var meta = imageForItem(item, catalogKey);
+    var figure = el("figure", "sheet-media");
+    var image = document.createElement("img");
+    image.src = meta.src;
+    image.alt = item.publicName + " – passendes Duftbild";
+    image.loading = "eager";
+    figure.appendChild(image);
+    figure.appendChild(el("figcaption", "sheet-media-caption", meta.label + (catalogKey === "oelroller" ? " · Ölroller" : " · Duftkomposition")));
+    if (catalogKey === "oelroller") figure.classList.add("sheet-oil-media");
+    return figure;
+  }
+
   function renderCatalog(key) {
     var catalog = getCatalog(key);
     var viewCfg = catalogViews[key];
@@ -1751,6 +1877,9 @@ if ('serviceWorker' in navigator) {
       var btn = document.createElement("button");
       btn.type = "button";
       btn.className = "row";
+      btn.appendChild(makeScentThumb(item, key));
+      var wrap = document.createElement("span");
+      wrap.className = "row-main";
       var names = document.createElement("span");
       names.className = "names";
       if (item.brand) {
@@ -1767,8 +1896,9 @@ if ('serviceWorker' in navigator) {
       var go = document.createElement("span");
       go.className = "go";
       go.textContent = catalog.sizes.every(function (sz) { return inventoryCount(item, sz) === 0; }) ? "Bestellen" : "Auswählen";
-      btn.appendChild(names);
-      btn.appendChild(go);
+      wrap.appendChild(names);
+      wrap.appendChild(go);
+      btn.appendChild(wrap);
       btn.addEventListener("click", function () { openSheet(item, btn, key); });
       li.appendChild(btn);
       var heart = document.createElement("button");
@@ -1877,6 +2007,14 @@ if ('serviceWorker' in navigator) {
     lastFocus = trigger;
     sheet.textContent = "";
     sheet.appendChild(head(item));
+    sheet.appendChild(makeScentFigure(item, catalogKey));
+    var itemMeta = imageForItem(item, catalogKey);
+    sheet.appendChild(el("p", "sheet-product-kicker", catalogKey === "oelroller" ? "Duftöl · kompakt & praktisch" : "Dein persönliches Dufterlebnis"));
+    var facts = el("div", "sheet-product-facts");
+    facts.appendChild(el("span", null, itemMeta.label));
+    facts.appendChild(el("span", null, catalogKey === "oelroller" ? "3 ml oder 8 ml" : "30 ml, 50 ml oder 100 ml"));
+    facts.appendChild(el("span", null, "Bestand in Echtzeit"));
+    sheet.appendChild(facts);
     sheet.appendChild(makeDuftDescription(item,catalogKey));
 
     var catalog = getCatalog(catalogKey);
