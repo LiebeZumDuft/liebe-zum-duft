@@ -1307,9 +1307,9 @@ footer{margin-top:80px!important;padding-bottom:48px!important}
       <input id="q" class="search" type="search" placeholder="Duft oder Marke suchen" autocomplete="off" enterkeyhint="search">
     </div>
     <div class="catalog-tools" role="group" aria-label="Produktansicht"><span class="catalog-tools-label">Ansicht</span><button class="favorite-filter" id="fav-only" type="button" aria-pressed="false">♡ Nur Merkliste <span id="fav-count">0</span></button><button class="clear-filters" id="clear-filters" type="button">Filter zurücksetzen</button></div>
-    <div class="brand-filter-wrap" aria-label="Markenfilter">
+    <div class="brand-filter-wrap" aria-label="Duftkollektionen">
       <button class="brand-scroll-arrow" id="brand-scroll-left" type="button" aria-label="Marken nach links scrollen">&#8249;</button>
-      <div class="chips" id="chips" role="group" aria-label="Nach Marke filtern" tabindex="0"></div>
+      <div class="chips" id="chips" role="group" aria-label="Nach Kollektion filtern" tabindex="0"></div>
       <button class="brand-scroll-arrow" id="brand-scroll-right" type="button" aria-label="Marken nach rechts scrollen">&#8250;</button>
     </div>
     <div id="list"></div>
@@ -1328,9 +1328,9 @@ footer{margin-top:80px!important;padding-bottom:48px!important}
     <p class="price-note">Alle Düfte gibt es auch als Ölroller – 3 ml für 6 € und 8 ml für 9 €.</p>
     <p class="price-note">Ölroller sind direkt bestellbar. Bei bestellten Düften berechnen wir 5 € Versandkosten. Ab zwei bestellten Düften ist der Versand kostenfrei.</p>
     <div class="catalog-tools" role="group" aria-label="Produktansicht"><span class="catalog-tools-label">Ansicht</span><button class="favorite-filter" id="oel-fav-only" type="button" aria-pressed="false">♡ Nur Merkliste <span id="oel-fav-count">0</span></button><button class="clear-filters" id="oel-clear-filters" type="button">Filter zurücksetzen</button></div>
-    <div class="brand-filter-wrap" aria-label="Markenfilter für Ölroller">
+    <div class="brand-filter-wrap" aria-label="Duftkollektionen für Ölroller">
       <button class="brand-scroll-arrow" id="oel-brand-scroll-left" type="button" aria-label="Marken nach links scrollen">&#8249;</button>
-      <div class="chips" id="oel-chips" role="group" aria-label="Ölroller nach Marke filtern" tabindex="0"></div>
+      <div class="chips" id="oel-chips" role="group" aria-label="Ölroller nach Kollektion filtern" tabindex="0"></div>
       <button class="brand-scroll-arrow" id="oel-brand-scroll-right" type="button" aria-label="Marken nach rechts scrollen">&#8250;</button>
     </div>
     <div id="oel-list"></div>
@@ -1463,6 +1463,60 @@ if ('serviceWorker' in navigator) {
   });
   var collator = new Intl.Collator("de", { sensitivity: "base", numeric: true });
   ITEMS.sort(function (a, b) { return collator.compare(a.name, b.name); });
+
+  // Sichtbare Produktnamen im gewünschten phonetischen Stil.
+  // Originalnamen verbleiben ausschließlich als stabile interne Produkt-IDs.
+  var BRAND_ALIASES = {
+    "Parfums de Marly":"Parfums de Marli", "Louis Vuitton":"Luis Vaiton",
+    "Tom Ford":"Tom Fort", "Carolina Herrera":"Karolina Herera",
+    "Clive Christian":"Klaiv Kristian", "Frederic Malle":"Frederik Mal",
+    "Paco Rabanne":"Pako Raban", "Calvin Klein":"Kalvin Klain",
+    "Zadig & Voltaire":"Sadig & Volter", "Dolce & Gabbana":"Doltsche & Gabana",
+    "Narciso Rodriguez":"Narsiso Rodriges", "Le Labo":"Le Laboa",
+    "Hugo Boss":"Hugo Bos", "Xerjoff":"Xerjof", "Montale":"Montal",
+    "Mancera":"Mansera", "Kilian":"Kiljan", "Chanel":"Schanel",
+    "Kayali":"Kajaali", "Armani":"Armanié", "Guerlain":"Gerlen",
+    "Versace":"Versatsche", "Dior":"Diyor", "Gucci":"Gutschi",
+    "Initio":"Initsio", "Nishane":"Nischane", "Escada":"Eskada",
+    "Lancome":"Lankom", "Bvlgari":"Bulgarié", "Hermes":"Ermes",
+    "Burberry":"Berberi", "Atkinsons":"Atkinsonz", "Chloe":"Kloé",
+    "Anfas":"Anfass", "YSL":"Y Ess El", "JPG":"Jé Pé Gé",
+    "GPG":"Gé Pé Gé", "MFK":"Em Ef Ka", "Rasasi":"Rasassi",
+    "Kenzo":"Kenso", "Prada":"Pradda", "Invictus":"Inviktus",
+    "Creed":"Kried"
+  };
+  var NAME_ALIASES = {
+    "Louis Vuitton":"Luis Vaiton", "Tom Ford":"Tom Fort", "Xerjoff":"Xerjof",
+    "Dior":"Diyor", "Chanel":"Schanel", "Gucci":"Gutschi", "Versace":"Versatsche",
+    "Paco Rabanne":"Pako Raban", "Guerlain":"Gerlen", "Mancera":"Mansera",
+    "Montale":"Montal", "Armani":"Armanié", "Burberry":"Berberi",
+    "Carolina Herrera":"Karolina Herera", "Calvin Klein":"Kalvin Klain",
+    "Dolce & Gabbana":"Doltsche & Gabana", "Parfums de Marly":"Parfums de Marli",
+    "De Marly":"De Marli", "Hugo Boss":"Hugo Bos", "Boss":"Bos",
+    "Chloe":"Kloé", "YSL":"Y Ess El", "JPG":"Jé Pé Gé", "GPG":"Gé Pé Gé",
+    "MFK":"Em Ef Ka", "Prada":"Pradda", "Kayali":"Kajaali",
+    "Kilian":"Kiljan", "Nishane":"Nischane", "Initio":"Initsio",
+    "Escada":"Eskada", "Lancome":"Lankom", "Bvlgari":"Bulgarié",
+    "Hermes":"Ermes", "Creed":"Kried", "Kenzo":"Kenso",
+    "Rasasi":"Rasassi", "Atkinsons":"Atkinsonz", "Frederic Malle":"Frederik Mal",
+    "Le Labo":"Le Laboa", "Clive Christian":"Klaiv Kristian",
+    "Narciso Rodriguez":"Narsiso Rodriges", "Zadig & Voltaire":"Sadig & Volter"
+  };
+  var REBRAND_PREFIXES = Object.keys(NAME_ALIASES).sort(function(a,b){return b.length-a.length;});
+  function rebrandName(name) {
+    for (var i=0; i<REBRAND_PREFIXES.length; i++) {
+      var old = REBRAND_PREFIXES[i];
+      if (name === old || name.indexOf(old + ' ') === 0) return NAME_ALIASES[old] + name.slice(old.length);
+    }
+    return name;
+  }
+  var LZD_NAMES = Object.create(null);
+  ITEMS.forEach(function(item) {
+    item.publicName = rebrandName(item.name);
+    item.publicCollection = item.brand ? (BRAND_ALIASES[item.brand] || item.brand) : 'Duftkollektion';
+    LZD_NAMES[item.name] = item.publicName;
+  });
+  function publicName(name) { return LZD_NAMES[name] || rebrandName(String(name || '')); }
 
   function letterOf(name) {
     var c = name.charAt(0).toUpperCase();
@@ -1616,7 +1670,7 @@ if ('serviceWorker' in navigator) {
       viewCfg.timer = setTimeout(function () { viewCfg.state.q = viewCfg.qEl.value; renderCatalog(viewCfg.key); }, 80);
     });
     viewCfg.chipsEl.appendChild(makeChip("Alle", "", viewCfg));
-    chipBrands.forEach(function (brand) { viewCfg.chipsEl.appendChild(makeChip(brand + " · " + brandCount[brand], brand, viewCfg)); });
+    chipBrands.forEach(function (brand) { viewCfg.chipsEl.appendChild(makeChip((BRAND_ALIASES[brand] || brand) + " · " + brandCount[brand], brand, viewCfg)); });
     requestAnimationFrame(function () { updateBrandScrollButtons(viewCfg); });
   });
   window.addEventListener("resize", function () { Object.keys(catalogViews).forEach(function (key) { updateBrandScrollButtons(catalogViews[key]); }); });
@@ -1668,21 +1722,21 @@ if ('serviceWorker' in navigator) {
     var shown = ITEMS.filter(function (i) {
       if (viewCfg.state.brand && i.brand !== viewCfg.state.brand) return false;
       if (viewCfg.state.favoritesOnly && !isFavorite(i.name)) return false;
-      return !q || norm(i.name).indexOf(q) !== -1;
+      return !q || norm(i.publicName).indexOf(q) !== -1 || norm(i.publicCollection).indexOf(q) !== -1;
     });
     viewCfg.countEl.textContent = shown.length === ITEMS.length ? ITEMS.length + " " + catalog.noun + " von A bis Z" : shown.length + " von " + ITEMS.length + " " + catalog.noun;
     viewCfg.listEl.textContent = "";
     if (!shown.length) {
       var e = document.createElement("p");
       e.className = "empty";
-      e.textContent = "Dazu habe ich nichts gefunden. Probiere einen anderen Namen oder eine andere Marke.";
+      e.textContent = "Dazu habe ich nichts gefunden. Probiere einen anderen Duftnamen oder eine andere Marke.";
       viewCfg.listEl.appendChild(e);
       return;
     }
     var frag = document.createDocumentFragment();
     var currentLetter = "", ul = null;
     shown.forEach(function (item) {
-      var l = letterOf(item.name);
+      var l = letterOf(item.publicName);
       if (l !== currentLetter) {
         currentLetter = l;
         var h = document.createElement("h3");
@@ -1702,12 +1756,12 @@ if ('serviceWorker' in navigator) {
       if (item.brand) {
         var bl = document.createElement("span");
         bl.className = "brand-line";
-        bl.textContent = item.brand;
+        bl.textContent = item.publicCollection;
         names.appendChild(bl);
       }
       var t = document.createElement("span");
       t.className = "title";
-      t.textContent = item.title;
+      t.textContent = item.publicName;
       names.appendChild(t);
       names.appendChild(el("span", "stock" + (!stockReady && key === "duefte" ? " unknown" : ""), stockText(item, key)));
       var go = document.createElement("span");
@@ -1722,7 +1776,7 @@ if ('serviceWorker' in navigator) {
       heart.className = "favorite-heart";
       heart.textContent = isFavorite(item.name) ? "♥" : "♡";
       heart.setAttribute("aria-pressed", isFavorite(item.name) ? "true" : "false");
-      heart.setAttribute("aria-label", item.name + (isFavorite(item.name) ? " aus Merkliste entfernen" : " zur Merkliste hinzufügen"));
+      heart.setAttribute("aria-label", item.publicName + (isFavorite(item.name) ? " aus Merkliste entfernen" : " zur Merkliste hinzufügen"));
       heart.title = isFavorite(item.name) ? "Aus Merkliste entfernen" : "Zur Merkliste hinzufügen";
       heart.addEventListener("click", function () { toggleFavorite(item.name); });
       li.appendChild(heart);
@@ -1764,8 +1818,8 @@ if ('serviceWorker' in navigator) {
   function head(item) {
     var wrap = el("div", "sheet-head");
     var left = el("div");
-    if (item.brand) left.appendChild(el("p", "s-brand", item.brand));
-    var h = el("h3", null, item.title);
+    if (item.brand) left.appendChild(el("p", "s-brand", item.publicCollection));
+    var h = el("h3", null, item.publicName);
     h.id = "sheet-title";
     left.appendChild(h);
     var x = el("button", "close", "×");
@@ -1809,8 +1863,8 @@ if ('serviceWorker' in navigator) {
     var profile = profileFor(item);
     if (profile) {
       box.appendChild(el("p", "duft-profile-type", profile[0]));
-      box.appendChild(el("p", "duft-profile-text", profile[1]));
-      box.appendChild(el("p", "duft-profile-notes", "Duftcharakter: " + profile[2]));
+      box.appendChild(el("p", "duft-profile-text", /Zuordnung noch offen|genaue Komposition offen|nicht verifiziert/i.test(profile[0]) ? "Für diese Komposition sind die einzelnen Duftnoten noch nicht verlässlich bestätigt. Wir beraten dich gerne zum Duftcharakter." : profile[1].split(item.name).join(item.publicName)));
+      if (!/nicht verifiziert/i.test(profile[2])) box.appendChild(el("p", "duft-profile-notes", "Duftcharakter: " + profile[2]));
     } else {
       box.appendChild(el("p", "duft-profile-text", "Für diesen neu hinzugefügten Duft ist das genaue Duftprofil noch nicht verifiziert."));
       box.appendChild(el("p", "duft-profile-notes", "Du möchtest mehr erfahren? Frage uns gern vor der Bestellung nach dem genauen Duftprofil."));
@@ -1940,7 +1994,7 @@ if ('serviceWorker' in navigator) {
     if(!checkoutItems.length){sheet.appendChild(el('p','note','Dein Warenkorb ist noch leer.'));}
     checkoutItems.forEach(function(line){
       var row=el('div','cart-line'),left=el('div');
-      left.appendChild(el('div',null,line.name));
+      left.appendChild(el('div',null,publicName(line.name)));
       left.appendChild(el('div','order-meta',productLabel(line.catalog)+' · '+line.quantity+' × '+line.size+' ml · '+(line.quantity*priceFor(line.catalog,line.size))+' €'));
       var remove=el('button',null,'Entfernen');remove.type='button';remove.hidden=!!isDirect;
       remove.addEventListener('click',function(){cart=cart.filter(function(x){return x!==line;});updateCartCount();openCart();});
@@ -1985,7 +2039,7 @@ if ('serviceWorker' in navigator) {
           var lines=response.map(function(r){
             var kind = (Number(r.size_ml)===3||Number(r.size_ml)===8) ? 'Ölroller' : 'Duft';
             var unitPrice = priceFor(kind === 'Ölroller' ? 'oelroller' : 'duefte', Number(r.size_ml));
-            return (r.reservation_type==='orderable'?'Bestellung':'Reservierung')+': '+r.quantity+' × '+r.perfume_name+' ('+kind+' · '+r.size_ml+' ml) – '+(r.quantity*unitPrice)+' €';
+            return (r.reservation_type==='orderable'?'Bestellung':'Reservierung')+': '+r.quantity+' × '+publicName(r.perfume_name)+' ('+kind+' · '+r.size_ml+' ml) – '+(r.quantity*unitPrice)+' €';
           });
           // Die tatsächlich gespeicherten Bestellarten sind maßgeblich für den Versand.
           var confirmedShipping=shippingSummary(response,true);
@@ -2126,7 +2180,7 @@ if ('serviceWorker' in navigator) {
       if(g.cartId)info.appendChild(el('div','order-meta','Auftrag #'+g.cartId.slice(0,8)));
       g.rows.forEach(function(r){
         var detail=el('div','order-line');
-        detail.appendChild(el('span','order-line-name',count(r)+' × '+r.perfume_name+' · '+r.size_ml+' ml · '+((Number(r.size_ml)===3||Number(r.size_ml)===8)?'Ölroller':'Duft')));
+        detail.appendChild(el('span','order-line-name',count(r)+' × '+publicName(r.perfume_name)+' · '+r.size_ml+' ml · '+((Number(r.size_ml)===3||Number(r.size_ml)===8)?'Ölroller':'Duft')));
         detail.appendChild(el('span','order-line-price',euro.format(amount(r))));
         info.appendChild(detail);
         info.appendChild(el('div','order-state',r.reservation_type==='orderable'?'Bestellung · Bestellbar':r.paid_at?'Reserviert · Bezahlt':'Reserviert · Zahlung offen'));
@@ -2140,7 +2194,7 @@ if ('serviceWorker' in navigator) {
         if(pane){pane.remove();return;}
         pane=el('div','order-payment-controls');
         g.rows.forEach(function(r){
-          var btn=el('button','order-action'+(r.paid_at?' paid':''),(r.paid_at?'Bezahlt ✓ · ':'Als bezahlt markieren · ')+r.perfume_name+' / '+r.size_ml+' ml');btn.type='button';
+          var btn=el('button','order-action'+(r.paid_at?' paid':''),(r.paid_at?'Bezahlt ✓ · ':'Als bezahlt markieren · ')+publicName(r.perfume_name)+' / '+r.size_ml+' ml');btn.type='button';
           btn.addEventListener('click',async function(){
             if(!confirm(r.paid_at?'Zahlung für diese Position zurücknehmen?':'Ist die Zahlung für diese Position eingegangen?'))return;
             btn.disabled=true;
@@ -2182,10 +2236,10 @@ if ('serviceWorker' in navigator) {
   function renderAdmin() {
     if (!accessToken) return;
     adminItems.textContent = '';
-    var found = ITEMS.filter(function(i) { return norm(i.name).includes(norm(adminSearch.value.trim())); });
+    var found = ITEMS.filter(function(i) { return norm(i.name).includes(norm(adminSearch.value.trim())) || norm(i.publicName).includes(norm(adminSearch.value.trim())); });
     found.forEach(function(item) {
       var wrap = el('div', 'admin-item');
-      wrap.appendChild(el('strong', null, item.name));
+      wrap.appendChild(el('strong', null, item.publicName + ' · Lagerreferenz: ' + item.name));
       var controls = el('div', 'admin-controls');
       var inputs = {};
       SIZES.forEach(function(size) {
